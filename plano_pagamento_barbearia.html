@@ -1,0 +1,538 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--color-text-primary); }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 20px; border-bottom: 0.5px solid var(--color-border-tertiary); padding-bottom: 0; }
+  .tab { padding: 8px 14px; font-size: 13px; cursor: pointer; border: none; background: none; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s, border-color .15s; }
+  .tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); font-weight: 500; }
+  .tab:hover:not(.active) { color: var(--color-text-primary); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px; }
+  .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 500; }
+  .badge-blue { background: var(--color-background-info); color: var(--color-text-info); }
+  .badge-green { background: var(--color-background-success); color: var(--color-text-success); }
+  .badge-amber { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .badge-red { background: var(--color-background-danger); color: var(--color-text-danger); }
+
+  .label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; font-weight: 500; }
+  .title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.7; }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .pill { font-size: 11px; padding: 3px 10px; border-radius: 100px; border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); font-family: var(--font-mono); }
+
+  .route-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  .route-table th { text-align: left; color: var(--color-text-secondary); font-weight: 500; padding: 4px 8px 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .route-table td { padding: 6px 8px; border-top: 0.5px solid var(--color-border-tertiary); vertical-align: top; }
+  .method { font-family: var(--font-mono); font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
+  .get { background: var(--color-background-info); color: var(--color-text-info); }
+  .post { background: var(--color-background-success); color: var(--color-text-success); }
+  .put { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .del { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .route-path { font-family: var(--font-mono); font-size: 12px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+
+  .mono { font-family: var(--font-mono); }
+  .code-block { font-family: var(--font-mono); font-size: 12px; line-height: 1.9; color: var(--color-text-secondary); background: var(--color-background-secondary); padding: 12px; border-radius: var(--border-radius-md); }
+
+  /* Fluxo visual */
+  .flow { display: flex; flex-direction: column; gap: 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; }
+  .flow-step:not(:last-child) { border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .flow-num { min-width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; margin-top: 1px; }
+  .flow-num-blue { background: var(--color-background-info); color: var(--color-text-info); }
+  .flow-num-green { background: var(--color-background-success); color: var(--color-text-success); }
+  .flow-num-amber { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .flow-content { flex: 1; }
+  .flow-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .flow-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 20px; }
+  .timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 0.5px; background: var(--color-border-secondary); }
+  .tl-item { position: relative; margin-bottom: 16px; }
+  .tl-dot { position: absolute; left: -17px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-background-info); border: 1.5px solid var(--color-text-info); }
+  .tl-dot.done { background: var(--color-text-success); border-color: var(--color-text-success); }
+  .tl-dot.warn { background: var(--color-text-warning); border-color: var(--color-text-warning); }
+  .tl-week { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 2px; }
+  .tl-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .tl-items { font-size: 12px; color: var(--color-text-secondary); line-height: 1.9; }
+
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .plan-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; }
+  .plan-price { font-size: 22px; font-weight: 500; margin: 4px 0; }
+  .plan-per { font-size: 11px; color: var(--color-text-secondary); }
+  .plan-items { font-size: 12px; color: var(--color-text-secondary); line-height: 2; margin-top: 8px; }
+  .check { color: var(--color-text-success); margin-right: 4px; }
+  .cross { color: var(--color-text-danger); margin-right: 4px; }
+  @media (max-width: 480px) { .plan-grid { grid-template-columns: 1fr; } }
+
+  .highlight-box { background: var(--color-background-success); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; margin-bottom: 10px; }
+  .highlight-box .desc { color: var(--color-text-success); }
+
+  .warn-box { background: var(--color-background-warning); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; margin-bottom: 10px; }
+  .warn-box .desc { color: var(--color-text-warning); }
+</style>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('visao')">Visão geral</button>
+  <button class="tab" onclick="show('fluxo')">Fluxo de pagamento</button>
+  <button class="tab" onclick="show('back')">Back-end</button>
+  <button class="tab" onclick="show('front')">Front-end</button>
+  <button class="tab" onclick="show('rotas')">Rotas API</button>
+  <button class="tab" onclick="show('freemium')">Planos</button>
+  <button class="tab" onclick="show('cronograma')">Cronograma</button>
+</div>
+
+<!-- VISÃO GERAL -->
+<div class="page active" id="pg-visao">
+  <div class="card">
+    <div class="label">Objetivo</div>
+    <div class="title">Sistema SaaS de agendamento para barbearias</div>
+    <div class="desc">Multi-tenant. Cada barbearia tem seu próprio subdomínio, painel e agenda. Você hospeda, eles pagam mensalidade. Cobrança automatizada via Asaas.</div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="label">Stack back-end</div>
+      <div class="pills">
+        <span class="pill">Java 21</span>
+        <span class="pill">Spring Boot 3</span>
+        <span class="pill">Spring Security</span>
+        <span class="pill">JWT</span>
+        <span class="pill">JPA / Hibernate</span>
+        <span class="pill">PostgreSQL</span>
+        <span class="pill">Redis</span>
+        <span class="pill">Docker</span>
+        <span class="pill">Railway</span>
+        <span class="pill">Asaas API</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Stack front-end</div>
+      <div class="pills">
+        <span class="pill">React 18</span>
+        <span class="pill">TypeScript</span>
+        <span class="pill">Vite</span>
+        <span class="pill">React Query</span>
+        <span class="pill">React Hook Form</span>
+        <span class="pill">Tailwind CSS</span>
+        <span class="pill">shadcn/ui</span>
+        <span class="pill">date-fns</span>
+        <span class="pill">Vercel</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Arquitetura geral</div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+      <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px">
+        <strong>Cliente (barbearia)</strong> — acessa <span class="mono">barbeariaX.seusite.com</span>
+      </div>
+      <div style="text-align:center;font-size:14px;color:var(--color-text-secondary);line-height:1.2;margin:2px 0">↓ HTTPS</div>
+      <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px">
+        <strong>Front React</strong> — Vercel — painel admin + página pública + tela de pagamento
+      </div>
+      <div style="text-align:center;font-size:14px;color:var(--color-text-secondary);line-height:1.2;margin:2px 0">↓ REST API</div>
+      <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px">
+        <strong>API Spring Boot</strong> — Railway — lógica de negócio, JWT, multi-tenant, integração Asaas
+      </div>
+      <div style="text-align:center;font-size:14px;color:var(--color-text-secondary);line-height:1.2;margin:2px 0">↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓</div>
+      <div class="two-col" style="gap:6px">
+        <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px"><strong>PostgreSQL</strong> — dados principais</div>
+        <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px"><strong>Asaas API</strong> — cobranças, Pix, boleto, cartão</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FLUXO DE PAGAMENTO -->
+<div class="page" id="pg-fluxo">
+  <div class="card">
+    <div class="label">Fluxo completo — trial até pagamento recorrente</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num flow-num-blue">1</div>
+        <div class="flow-content">
+          <div class="flow-title">Cadastro da barbearia</div>
+          <div class="flow-desc">Você cadastra o tenant no sistema. Automaticamente: <span class="mono" style="font-size:11px">trialExpiresAt = hoje + 30 dias</span>, <span class="mono" style="font-size:11px">isActive = true</span>. Você também cria o cliente no Asaas e salva o <span class="mono" style="font-size:11px">asaasCustomerId</span>.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-blue">2</div>
+        <div class="flow-content">
+          <div class="flow-title">30 dias de trial livre</div>
+          <div class="flow-desc">Dono usa tudo normalmente. No dia 25 você envia mensagem no WhatsApp avisando que o trial acaba em 5 dias. Custo: zero para os dois.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-amber">3</div>
+        <div class="flow-content">
+          <div class="flow-title">Trial expira</div>
+          <div class="flow-desc">O interceptor Spring detecta <span class="mono" style="font-size:11px">trialExpiresAt</span> no passado e <span class="mono" style="font-size:11px">isActive = false</span>. Retorna <span class="mono" style="font-size:11px">402</span> para rotas admin. A página pública de agendamento continua funcionando — pressão natural para pagar.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-amber">4</div>
+        <div class="flow-content">
+          <div class="flow-title">Dono vê tela de pagamento</div>
+          <div class="flow-desc">Front exibe tela bloqueante com as opções: Pix, boleto ou cartão. Ao clicar, o front chama <span class="mono" style="font-size:11px">POST /billing/charge</span> no seu back-end.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-amber">5</div>
+        <div class="flow-content">
+          <div class="flow-title">Back-end gera cobrança no Asaas</div>
+          <div class="flow-desc">Seu servidor chama a API do Asaas com o <span class="mono" style="font-size:11px">asaasCustomerId</span>, valor R$ 99 e tipo de pagamento. O Asaas retorna o QR code Pix ou link de boleto. Você devolve pro front exibir.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-green">6</div>
+        <div class="flow-content">
+          <div class="flow-title">Pagamento confirmado — webhook</div>
+          <div class="flow-desc">Quando o Pix é pago (ou boleto compensado), o Asaas chama automaticamente <span class="mono" style="font-size:11px">POST /webhook/asaas</span> no seu back-end. Você valida a assinatura, seta <span class="mono" style="font-size:11px">isActive = true</span> e <span class="mono" style="font-size:11px">nextBillingDate = hoje + 30 dias</span>.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-green">7</div>
+        <div class="flow-content">
+          <div class="flow-title">Painel reativado automaticamente</div>
+          <div class="flow-desc">Na próxima requisição do front, o interceptor libera o acesso. Sem intervenção manual sua. No mês seguinte, o ciclo se repete.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="warn-box">
+    <div class="label">Nenhum dado de cartão passa pelo seu servidor</div>
+    <div class="desc">Cartão é processado direto pelo Asaas. Você só recebe o evento "pagou". Zero responsabilidade com PCI compliance.</div>
+  </div>
+</div>
+
+<!-- BACK-END -->
+<div class="page" id="pg-back">
+  <div class="card">
+    <div class="label">Campos no Tenant</div>
+    <div class="code-block">
+      private boolean isActive;<br>
+      private LocalDate trialExpiresAt;<br>
+      private LocalDate nextBillingDate;<br>
+      private String asaasCustomerId; // ID no Asaas<br>
+      private String asaasSubscriptionId; // se usar recorrência nativa
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Interceptor de acesso (TenantAccessInterceptor)</div>
+    <div class="code-block">
+      boolean trialValid = tenant.getTrialExpiresAt()<br>
+      &nbsp;&nbsp;.isAfter(LocalDate.now());<br><br>
+      if (!tenant.isActive() &amp;&amp; !trialValid) {<br>
+      &nbsp;&nbsp;response.setStatus(402);<br>
+      &nbsp;&nbsp;// retorna { "blocked": true, "reason": "trial_expired" }<br>
+      &nbsp;&nbsp;return false;<br>
+      }
+    </div>
+    <div class="desc" style="margin-top:8px">Aplicado em todas as rotas <span class="mono" style="font-size:11px">/admin/**</span>. Rotas <span class="mono" style="font-size:11px">/public/**</span>, <span class="mono" style="font-size:11px">/auth/**</span> e <span class="mono" style="font-size:11px">/webhook/**</span> ficam fora do interceptor.</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Webhook do Asaas (POST /webhook/asaas)</div>
+    <div class="code-block">
+      // 1. Validar assinatura do header<br>
+      // &nbsp;&nbsp;&nbsp;asaas-access-token == seu token secreto<br><br>
+      // 2. Verificar evento<br>
+      if (event.equals("PAYMENT_CONFIRMED") ||<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;event.equals("PAYMENT_RECEIVED")) {<br><br>
+      &nbsp;&nbsp;// 3. Buscar tenant pelo asaasCustomerId<br>
+      &nbsp;&nbsp;// 4. Ativar e renovar<br>
+      &nbsp;&nbsp;tenant.setActive(true);<br>
+      &nbsp;&nbsp;tenant.setNextBillingDate(<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;LocalDate.now().plusDays(30));<br>
+      &nbsp;&nbsp;tenantRepo.save(tenant);<br>
+      }
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Criar cobrança no Asaas (POST /billing/charge)</div>
+    <div class="code-block">
+      // Chamada à API do Asaas<br>
+      POST https://api.asaas.com/v3/payments<br><br>
+      {<br>
+      &nbsp;&nbsp;"customer": "cus_asaasCustomerId",<br>
+      &nbsp;&nbsp;"billingType": "PIX", // ou BOLETO, CREDIT_CARD<br>
+      &nbsp;&nbsp;"value": 99.00,<br>
+      &nbsp;&nbsp;"dueDate": "2025-05-01",<br>
+      &nbsp;&nbsp;"description": "Mensalidade BarberApp"<br>
+      }<br><br>
+      // Retorno: pixQrCode, invoiceUrl, barCode
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="label">Job de verificação diária</div>
+      <div class="desc">Um <span class="mono" style="font-size:11px">@Scheduled</span> roda toda meia-noite verificando tenants com <span class="mono" style="font-size:11px">nextBillingDate = hoje</span>. Gera automaticamente a cobrança do mês seguinte no Asaas e manda notificação pro dono.</div>
+    </div>
+    <div class="card">
+      <div class="label">Inadimplência</div>
+      <div class="desc">Se o pagamento não vier em 3 dias após o vencimento, seta <span class="mono" style="font-size:11px">isActive = false</span>. O painel bloqueia automaticamente. Quando pagar, o webhook reativa.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FRONT-END -->
+<div class="page" id="pg-front">
+  <div class="card">
+    <div class="label">Tela de pagamento (bloqueante)</div>
+    <div class="desc">Quando a API retorna <span class="mono" style="font-size:11px">402</span>, o front substitui o painel por uma tela de pagamento. Não é um modal — é uma tela completa que não tem como fechar sem pagar.</div>
+    <div class="pills" style="margin-top:10px">
+      <span class="pill">Botão Pix (preferido)</span>
+      <span class="pill">Botão Boleto</span>
+      <span class="pill">Botão Cartão</span>
+      <span class="pill">QR Code na tela</span>
+      <span class="pill">Polling de confirmação</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Polling de confirmação (Pix)</div>
+    <div class="desc">Após gerar o QR code Pix, o front faz polling a cada 5 segundos em <span class="mono" style="font-size:11px">GET /billing/status</span>. Quando o back-end confirmar pagamento via webhook, o próximo poll retorna <span class="mono" style="font-size:11px">{ "active": true }</span> e o front redireciona pro painel automaticamente — experiência fluida, sem precisar recarregar a página.</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Banner de aviso (dias 25–30 do trial)</div>
+    <div class="desc">Antes de bloquear, o painel exibe um banner amarelo discreto: <em>"Seu período gratuito encerra em X dias. Garanta a continuidade agora."</em> O front calcula isso comparando a data local com <span class="mono" style="font-size:11px">trialExpiresAt</span> retornado no JWT ou num endpoint <span class="mono" style="font-size:11px">GET /admin/billing/status</span>.</div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="label">Duas aplicações React</div>
+      <div class="desc" style="line-height:2">Página pública de agendamento<br>Painel admin + tela de pagamento</div>
+    </div>
+    <div class="card">
+      <div class="label">Deploy</div>
+      <div class="desc"><strong>Vercel</strong> — grátis, wildcard <span class="mono" style="font-size:11px">*.seusite.com</span>, deploy automático via GitHub.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROTAS API -->
+<div class="page" id="pg-rotas">
+  <div class="card">
+    <div class="label">Auth</div>
+    <table class="route-table">
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/auth/login</td><td>Login dono/barbeiro</td></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/auth/refresh</td><td>Renova JWT</td></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/auth/logout</td><td>Invalida token</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="label">Pagamento e billing</div>
+    <table class="route-table">
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/billing/charge</td><td>Gera cobrança no Asaas</td></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/billing/status</td><td>Status do tenant (polling)</td></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/billing/history</td><td>Histórico de pagamentos</td></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/webhook/asaas</td><td>Recebe eventos do Asaas</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="label">Agendamento público (sem auth)</div>
+    <table class="route-table">
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/public/{slug}</td><td>Info da barbearia</td></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/public/{slug}/services</td><td>Lista de serviços</td></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/public/{slug}/barbers</td><td>Lista de barbeiros</td></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/public/{slug}/slots</td><td>Horários disponíveis</td></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/public/{slug}/book</td><td>Criar agendamento</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="label">Admin — Agendamentos</div>
+    <table class="route-table">
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/admin/appointments</td><td>Listar com filtros</td></tr>
+      <tr><td><span class="method put">PUT</span></td><td class="route-path">/admin/appointments/{id}</td><td>Confirmar / cancelar</td></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/admin/appointments</td><td>Criar manual</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="label">Admin — Gestão</div>
+    <table class="route-table">
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/admin/barbers</td><td>Listar barbeiros</td></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/admin/barbers</td><td>Adicionar barbeiro</td></tr>
+      <tr><td><span class="method put">PUT</span></td><td class="route-path">/admin/barbers/{id}</td><td>Editar</td></tr>
+      <tr><td><span class="method del">DEL</span></td><td class="route-path">/admin/barbers/{id}</td><td>Remover</td></tr>
+      <tr><td><span class="method get">GET</span></td><td class="route-path">/admin/services</td><td>Listar serviços</td></tr>
+      <tr><td><span class="method post">POST</span></td><td class="route-path">/admin/services</td><td>Criar serviço</td></tr>
+      <tr><td><span class="method put">PUT</span></td><td class="route-path">/admin/services/{id}</td><td>Editar serviço</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- PLANOS -->
+<div class="page" id="pg-freemium">
+  <div class="card">
+    <div class="label">Controle de acesso por status</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num flow-num-green">✓</div>
+        <div class="flow-content">
+          <div class="flow-title">Trial ativo (dias 1–30)</div>
+          <div class="flow-desc"><span class="mono" style="font-size:11px">isActive = true</span> ou <span class="mono" style="font-size:11px">trialExpiresAt</span> no futuro. Tudo liberado.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-amber">!</div>
+        <div class="flow-content">
+          <div class="flow-title">Aviso (dias 25–30)</div>
+          <div class="flow-desc">Banner amarelo no painel. Trial ainda ativo, mas cobrança pendente gerada no Asaas.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:var(--color-background-danger);color:var(--color-text-danger)">✕</div>
+        <div class="flow-content">
+          <div class="flow-title">Bloqueado (trial expirado + não pagou)</div>
+          <div class="flow-desc">Painel admin retorna 402. Página pública ainda funciona. Tela de pagamento exibida.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-green">✓</div>
+        <div class="flow-content">
+          <div class="flow-title">Ativo pago</div>
+          <div class="flow-desc"><span class="mono" style="font-size:11px">isActive = true</span> + <span class="mono" style="font-size:11px">nextBillingDate</span> atualizado. Ciclo mensal automático.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="plan-grid" style="margin-bottom:12px">
+    <div class="plan-card">
+      <div class="badge badge-amber" style="display:inline-block;margin-bottom:6px">Trial 30 dias</div>
+      <div class="plan-price">R$ 0</div>
+      <div class="plan-per">sem cartão</div>
+      <div class="plan-items">
+        <div><span class="check">✓</span>Tudo liberado</div>
+        <div><span class="check">✓</span>Configuração grátis</div>
+        <div><span class="check">✓</span>Suporte WhatsApp</div>
+        <div><span class="check">✓</span>Sem compromisso</div>
+      </div>
+    </div>
+    <div class="plan-card" style="border: 1.5px solid var(--color-border-info);">
+      <div class="badge badge-blue" style="display:inline-block;margin-bottom:6px">Plano mensal</div>
+      <div class="plan-price">R$ 99</div>
+      <div class="plan-per">por mês via Pix / boleto / cartão</div>
+      <div class="plan-items">
+        <div><span class="check">✓</span>Painel completo</div>
+        <div><span class="check">✓</span>Agendamentos ilimitados</div>
+        <div><span class="check">✓</span>Link personalizado</div>
+        <div><span class="check">✓</span>Cobrança automática</div>
+        <div><span class="check">✓</span>Suporte contínuo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Projeção de receita</div>
+    <table class="route-table">
+      <tr><th>Clientes</th><th>Receita bruta</th><th>Taxa Asaas (~2%)</th><th>Infra</th><th>Líquido</th></tr>
+      <tr><td>5</td><td>R$ 495</td><td>~R$ 10</td><td>R$ 80</td><td><strong>~R$ 405</strong></td></tr>
+      <tr><td>10</td><td>R$ 990</td><td>~R$ 20</td><td>R$ 80</td><td><strong>~R$ 890</strong></td></tr>
+      <tr><td>20</td><td>R$ 1.980</td><td>~R$ 40</td><td>R$ 100</td><td><strong>~R$ 1.840</strong></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- CRONOGRAMA -->
+<div class="page" id="pg-cronograma">
+  <div class="card">
+    <div class="label">Fase 1 — Produto (semanas 1–4)</div>
+    <div class="timeline" style="margin-top:10px">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">Semana 1</div>
+        <div class="tl-title">Estrutura base + billing</div>
+        <div class="tl-items">Setup Spring Boot + PostgreSQL + JWT<br>Entidades: Tenant, User, Barber, Service<br>Campos de billing no Tenant<br>Conta Asaas sandbox criada</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">Semana 2</div>
+        <div class="tl-title">Agendamento + interceptor</div>
+        <div class="tl-items">Lógica de slots disponíveis<br>Endpoint público de agendamento<br>TenantAccessInterceptor com trial/billing<br>Webhook do Asaas funcionando em sandbox</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">Semana 3</div>
+        <div class="tl-title">Front React</div>
+        <div class="tl-items">Página pública de agendamento<br>Painel admin: agenda + lista<br>Login e autenticação JWT<br>Banner de aviso de trial</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">Semana 4</div>
+        <div class="tl-title">Tela de pagamento</div>
+        <div class="tl-items">Tela bloqueante com opções Pix/boleto<br>QR code Pix na tela<br>Polling de confirmação automático<br>Redirecionamento pós-pagamento</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Fase 2 — Deploy e primeiro cliente (semanas 5–7)</div>
+    <div class="timeline" style="margin-top:10px">
+      <div class="tl-item">
+        <div class="tl-dot warn"></div>
+        <div class="tl-week">Semana 5</div>
+        <div class="tl-title">Deploy + produção</div>
+        <div class="tl-items">Railway (back) + Vercel (front)<br>Domínio próprio + wildcard<br>Asaas ambiente de produção<br>Teste end-to-end do fluxo de pagamento</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot warn"></div>
+        <div class="tl-week">Semana 6–7</div>
+        <div class="tl-title">Prospecção ativa</div>
+        <div class="tl-items">Abordagem em barbearias locais com demo<br>Instalação gratuita no primeiro cliente<br>Acompanhar trial e converter</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Fase 3 — Recorrência (mês 2+)</div>
+    <div class="timeline" style="margin-top:10px">
+      <div class="tl-item">
+        <div class="tl-dot done"></div>
+        <div class="tl-week">Mês 2</div>
+        <div class="tl-title">Primeira cobrança automática</div>
+        <div class="tl-items">Job noturno gera cobrança automaticamente<br>Webhook confirma e renova acesso<br>Zero intervenção manual</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot done"></div>
+        <div class="tl-week">Mês 3+</div>
+        <div class="tl-title">Escalar</div>
+        <div class="tl-items">10 clientes = ~R$ 890/mês líquido<br>Usar depoimento real para prospectar mais<br>Considerar plano anual com desconto</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pg-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
