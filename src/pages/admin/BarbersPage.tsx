@@ -43,6 +43,7 @@ export default function BarbersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editBarber, setEditBarber] = useState<Barber | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [selectedServices, setSelectedServices] = useState<Record<string, string[]>>({})
 
   const { data: barbers = [], isLoading } = useQuery({
     queryKey: ['barbers'],
@@ -118,12 +119,22 @@ export default function BarbersPage() {
     onError: () => toast({ variant: 'destructive', title: 'Erro ao atualizar serviços' }),
   })
 
-  function toggleService(barber: Barber, serviceId: string) {
-    const currentIds = barber.services.map((s) => s.id)
-    const newIds = currentIds.includes(serviceId)
-      ? currentIds.filter((id) => id !== serviceId)
-      : [...currentIds, serviceId]
-    serviceToggleMutation.mutate({ barberId: barber.id, name: barber.name, phone: barber.phone, serviceIds: newIds })
+  function toggleService(barberId: string, serviceId: string) {
+    setSelectedServices((prev) => {
+      const current = prev[barberId] || barbers.find((b) => b.id === barberId)?.services.map((s) => s.id) || []
+      const newIds = current.includes(serviceId)
+        ? current.filter((id) => id !== serviceId)
+        : [...current, serviceId]
+      return { ...prev, [barberId]: newIds }
+    })
+  }
+
+  function saveServices(barber: Barber) {
+    const serviceIds = selectedServices[barber.id] || barber.services.map((s) => s.id)
+    serviceToggleMutation.mutate(
+      { barberId: barber.id, name: barber.name, phone: barber.phone, serviceIds },
+      { onSettled: () => setExpandedId(null) }
+    )
   }
 
   return (
@@ -230,23 +241,35 @@ export default function BarbersPage() {
                   {allServices.length === 0 ? (
                     <p className="text-sm text-gray-400">Nenhum serviço cadastrado</p>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {allServices.map((service) => {
-                        const checked = barber.services.some((s) => s.id === service.id)
-                        return (
-                          <label
-                            key={service.id}
-                            className="flex items-center gap-2.5 cursor-pointer"
-                          >
-                            <Checkbox
-                              checked={checked}
-                              onCheckedChange={() => toggleService(barber, service.id)}
-                            />
-                            <span className="text-sm text-gray-700">{service.name}</span>
-                          </label>
-                        )
-                      })}
-                    </div>
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                        {allServices.map((service) => {
+                          const currentIds = selectedServices[barber.id] || barber.services.map((s) => s.id)
+                          const checked = currentIds.includes(service.id)
+                          return (
+                            <label
+                              key={service.id}
+                              className="flex items-center gap-2.5 cursor-pointer"
+                            >
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={() => toggleService(barber.id, service.id)}
+                              />
+                              <span className="text-sm text-gray-700">{service.name}</span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="gold"
+                        size="sm"
+                        onClick={() => saveServices(barber)}
+                        loading={serviceToggleMutation.isPending}
+                      >
+                        Salvar serviços
+                      </Button>
+                    </>
                   )}
                 </div>
               )}

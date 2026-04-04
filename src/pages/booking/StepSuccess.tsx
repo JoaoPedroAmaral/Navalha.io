@@ -74,17 +74,6 @@ export default function StepSuccess({
           <span>{format(scheduledDate, 'HH:mm')}</span>
         </div>
 
-        <div className="mt-4 pt-4 border-t">
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 rounded-full bg-tenant-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
-              {clientInitial}
-            </div>
-            <div>
-              <p className="font-medium text-gray-900">{appointment.clientName}</p>
-              <p className="text-gray-400 text-xs">{appointment.clientPhone}</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* CTA */}
@@ -92,15 +81,7 @@ export default function StepSuccess({
         <p className="text-sm text-gray-500">
           Anote o horário e apareça na barbearia alguns minutos antes.
         </p>
-        <a
-          href={buildWhatsAppUrl()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full rounded-lg border border-green-600 bg-green-50 px-4 py-2.5 text-sm font-medium text-green-700 hover:bg-green-100 transition-colors"
-        >
-          <Share2 className="w-4 h-4 shrink-0" />
-          Compartilhar no WhatsApp
-        </a>
+        
         <Button
           variant="gold"
           className="w-full"

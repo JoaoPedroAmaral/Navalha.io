@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { format } from 'date-fns'
 import { Plus, Check, X as XIcon, CheckCircle, Calendar } from 'lucide-react'
+import { formatPhoneDisplay } from '@/components/ui/phone-input'
 import {
   getAppointments,
   updateAppointmentStatus,
@@ -195,7 +196,7 @@ export default function AppointmentsPage() {
                     </td>
                     <td className="px-3 py-2.5 sm:px-5 sm:py-3.5" data-label="Cliente">
                       <p className="font-semibold text-gray-900 text-sm">{appt.clientName}</p>
-                      <p className="text-gray-400 text-xs">{appt.clientPhone}</p>
+                      <p className="text-gray-400 text-xs">{formatPhoneDisplay(appt.clientPhone)}</p>
                     </td>
                     <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 hidden sm:table-cell text-gray-600 text-sm" data-label="Barbeiro">
                       {appt.barberName ?? '—'}

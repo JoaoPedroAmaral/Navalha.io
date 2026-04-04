@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Calendar, Clock, CheckCircle, Check, X, TrendingUp } from 'lucide-react'
+import { formatPhoneDisplay } from '@/components/ui/phone-input'
 import { getAppointments, updateAppointmentStatus } from '@/api/admin'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
@@ -153,7 +154,7 @@ export default function DashboardPage() {
                     </td>
                     <td className="px-3 py-2.5 sm:px-5 sm:py-3.5" data-label="Cliente">
                       <p className="font-semibold text-gray-900 text-sm">{appt.clientName}</p>
-                      <p className="text-gray-400 text-xs">{appt.clientPhone}</p>
+                      <p className="text-gray-400 text-xs">{formatPhoneDisplay(appt.clientPhone)}</p>
                     </td>
                     <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 hidden sm:table-cell text-gray-600 text-sm" data-label="Barbeiro">
                       {appt.barberName ?? '—'}
