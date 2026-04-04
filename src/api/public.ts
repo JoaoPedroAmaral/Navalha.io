@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { PublicBarbershop, Service, Barber, TimeSlot, BookingPayload, Appointment } from '@/types'
+import type { PublicBarbershop, Service, Barber, Product, TimeSlot, BookingPayload, Appointment } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? ''
 
@@ -27,6 +27,11 @@ export async function getPublicSlots(
   const { data } = await axios.get(`${BASE_URL}/api/public/${slug}/slots`, {
     params: { barberId, serviceId, date },
   })
+  return data
+}
+
+export async function getPublicProducts(slug: string): Promise<Product[]> {
+  const { data } = await axios.get(`${BASE_URL}/api/public/${slug}/products`)
   return data
 }
 

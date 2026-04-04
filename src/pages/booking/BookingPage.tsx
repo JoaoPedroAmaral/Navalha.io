@@ -1,43 +1,64 @@
-import { useState, useEffect, useLayoutEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { getPublicBarbershop } from '@/api/public'
-import { applyTenantTheme, resetTenantTheme } from '@/lib/applyTenantTheme'
-import { Scissors, MapPin, Phone, ExternalLink, Clock, CalendarDays } from 'lucide-react'
-import { formatPhoneDisplay } from '@/components/ui/phone-input'
-import StepSelectService from './StepSelectService'
-import StepSelectBarber from './StepSelectBarber'
-import StepSelectDateTime from './StepSelectDateTime'
-import StepClientInfo from './StepClientInfo'
-import StepSuccess from './StepSuccess'
-import type { Service, Barber, Appointment } from '@/types'
+import { useState, useEffect, useLayoutEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicBarbershop, getPublicProducts } from "@/api/public";
+import { applyTenantTheme, resetTenantTheme } from "@/lib/applyTenantTheme";
+import {
+  Scissors,
+  MapPin,
+  Package,
+  Phone,
+  ExternalLink,
+  Clock,
+  CalendarDays,
+} from "lucide-react";
+import { formatPhoneDisplay } from "@/components/ui/phone-input";
+import StepSelectService from "./StepSelectService";
+import StepSelectBarber from "./StepSelectBarber";
+import StepSelectDateTime from "./StepSelectDateTime";
+import StepClientInfo from "./StepClientInfo";
+import StepSuccess from "./StepSuccess";
+import { formatCurrency } from "@/lib/utils";
+import type { Service, Barber, Appointment } from "@/types";
 
 export type BookingState = {
-  service: Service | null
-  barber: Barber | null
-  scheduledAt: string | null
-  appointment: Appointment | null
-}
+  service: Service | null;
+  barber: Barber | null;
+  scheduledAt: string | null;
+  appointment: Appointment | null;
+};
 
-const STEPS = ['Serviço', 'Barbeiro', 'Data & Hora', 'Confirmação', 'Sucesso']
+const STEPS = [
+  "Serviço",
+  "Funcionario",
+  "Data & Hora",
+  "Confirmação",
+  "Sucesso",
+];
 
 export default function BookingPage() {
-  const { slug } = useParams<{ slug: string }>()
-  const [step, setStep] = useState(0)
+  const { slug } = useParams<{ slug: string }>();
+  const [step, setStep] = useState(0);
   const [booking, setBooking] = useState<BookingState>({
     service: null,
     barber: null,
     scheduledAt: null,
     appointment: null,
-  })
+  });
 
-  const [themeReady, setThemeReady] = useState(false)
+  const [themeReady, setThemeReady] = useState(false);
 
   const { data: shop, isLoading: shopLoading } = useQuery({
-    queryKey: ['public-shop', slug],
+    queryKey: ["public-shop", slug],
     queryFn: () => getPublicBarbershop(slug!),
     enabled: !!slug,
-  })
+  });
+
+  const { data: products = [] } = useQuery({
+    queryKey: ["public-products", slug],
+    queryFn: () => getPublicProducts(slug!),
+    enabled: !!slug,
+  });
 
   // useLayoutEffect fires synchronously after DOM mutations but before the
   // browser paints, guaranteeing the CSS variables are set before any
@@ -45,21 +66,21 @@ export default function BookingPage() {
   // resolves from cache on the very first render.
   useLayoutEffect(() => {
     if (!shopLoading) {
-      if (shop) applyTenantTheme(shop.primaryColor, shop.secondaryColor)
-      setThemeReady(true)
+      if (shop) applyTenantTheme(shop.primaryColor, shop.secondaryColor);
+      setThemeReady(true);
     }
-  }, [shop, shopLoading])
+  }, [shop, shopLoading]);
 
   useEffect(() => {
-    return () => resetTenantTheme()
-  }, [])
+    return () => resetTenantTheme();
+  }, []);
 
   if (!slug) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
         Link inválido
       </div>
-    )
+    );
   }
 
   if (shopLoading || !themeReady) {
@@ -72,7 +93,7 @@ export default function BookingPage() {
           <p className="text-sm text-gray-500 tracking-wide">Carregando...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -92,7 +113,9 @@ export default function BookingPage() {
             </div>
           )}
           <div>
-            <h1 className="font-bold text-lg leading-tight">{shop?.name ?? 'Barbearia'}</h1>
+            <h1 className="font-bold text-lg leading-tight">
+              {shop?.name ?? "Barbearia"}
+            </h1>
             <p className="text-xs text-white/60">Agendamento online</p>
           </div>
         </div>
@@ -109,17 +132,17 @@ export default function BookingPage() {
                     <div
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                         idx < step
-                          ? 'bg-green-500 text-white'
+                          ? "bg-green-500 text-white"
                           : idx === step
-                          ? 'bg-tenant-secondary text-white'
-                          : 'bg-gray-200 text-gray-400'
+                            ? "bg-tenant-secondary text-white"
+                            : "bg-gray-200 text-gray-400"
                       }`}
                     >
-                      {idx < step ? '✓' : idx + 1}
+                      {idx < step ? "✓" : idx + 1}
                     </div>
                     <span
                       className={`text-xs font-medium leading-tight text-center max-w-[56px] truncate ${
-                        idx === step ? 'text-gray-900' : 'text-gray-400'
+                        idx === step ? "text-gray-900" : "text-gray-400"
                       }`}
                     >
                       {label}
@@ -127,7 +150,7 @@ export default function BookingPage() {
                   </div>
                   {idx < 3 && (
                     <div
-                      className={`flex-1 h-px mx-1 sm:mx-2 mt-[-14px] ${idx < step ? 'bg-green-400' : 'bg-gray-200'}`}
+                      className={`flex-1 h-px mx-1 sm:mx-2 mt-[-14px] ${idx < step ? "bg-green-400" : "bg-gray-200"}`}
                     />
                   )}
                 </div>
@@ -138,49 +161,77 @@ export default function BookingPage() {
       )}
 
       {/* Barbershop info bar */}
-      {shop && (shop.mapsUrl || shop.contactPhone || shop.instagramUrl || shop.openingHours || shop.operationDays) && (
-        <div className="bg-white border-b overflow-x-auto">
-          <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-x-4 gap-y-1 flex-wrap min-w-0">
-            {shop.mapsUrl && (
-              <a
-                href={shop.mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors whitespace-nowrap"
-              >
-                <MapPin className="w-3 h-3 shrink-0" />
-                Ver no mapa
-              </a>
-            )}
-            {shop.contactPhone && (
-              <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-                <Phone className="w-3 h-3 shrink-0" />
-                {formatPhoneDisplay(shop.contactPhone)}
-              </span>
-            )}
-            {shop.instagramUrl && (
-              <a
-                href={shop.instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors whitespace-nowrap"
-              >
-                <ExternalLink className="w-3 h-3 shrink-0" />
-                @{shop.instagramUrl.replace(/.*instagram\.com\//, '').replace(/\/$/, '')}
-              </a>
-            )}
-            {shop.openingHours && (
-              <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-                <Clock className="w-3 h-3 shrink-0" />
-                {shop.openingHours}
-              </span>
-            )}
-            {shop.operationDays && (
-              <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-                <CalendarDays className="w-3 h-3 shrink-0" />
-                {shop.operationDays}
-              </span>
-            )}
+      {shop &&
+        (shop.mapsUrl ||
+          shop.contactPhone ||
+          shop.instagramUrl ||
+          shop.openingHours ||
+          shop.operationDays) && (
+          <div className="bg-white border-b overflow-x-auto">
+            <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-x-4 gap-y-1 flex-wrap min-w-0">
+              {shop.mapsUrl && (
+                <a
+                  href={shop.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors whitespace-nowrap"
+                >
+                  <MapPin className="w-3 h-3 shrink-0" />
+                  Ver no mapa
+                </a>
+              )}
+              {shop.contactPhone && (
+                <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                  <Phone className="w-3 h-3 shrink-0" />
+                  {formatPhoneDisplay(shop.contactPhone)}
+                </span>
+              )}
+              {shop.instagramUrl && (
+                <a
+                  href={shop.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors whitespace-nowrap"
+                >
+                  <ExternalLink className="w-3 h-3 shrink-0" />@
+                  {shop.instagramUrl
+                    .replace(/.*instagram\.com\//, "")
+                    .replace(/\/$/, "")}
+                </a>
+              )}
+              {shop.openingHours && (
+                <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                  <Clock className="w-3 h-3 shrink-0" />
+                  {shop.openingHours}
+                </span>
+              )}
+              {shop.operationDays && (
+                <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                  <CalendarDays className="w-3 h-3 shrink-0" />
+                  {shop.operationDays}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+      {/* Products catalog */}
+      {products.length > 0 && (
+        <div className="max-w-2xl mx-auto px-4 pt-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Package className="w-4 h-4 text-gray-400" />
+            <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Produtos</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {products.map((product) => (
+              <div key={product.id} className="bg-white rounded-xl border p-3 shadow-sm">
+                <p className="font-semibold text-gray-900 text-sm leading-snug">{product.name}</p>
+                {product.description && (
+                  <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{product.description}</p>
+                )}
+                <p className="mt-2 text-sm font-bold text-tenant-secondary">{formatCurrency(product.price)}</p>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -191,8 +242,13 @@ export default function BookingPage() {
           <StepSelectService
             slug={slug}
             onSelect={(service) => {
-              setBooking((prev) => ({ ...prev, service, barber: null, scheduledAt: null }))
-              setStep(1)
+              setBooking((prev) => ({
+                ...prev,
+                service,
+                barber: null,
+                scheduledAt: null,
+              }));
+              setStep(1);
             }}
           />
         )}
@@ -201,8 +257,8 @@ export default function BookingPage() {
             slug={slug}
             selectedService={booking.service}
             onSelect={(barber) => {
-              setBooking((prev) => ({ ...prev, barber, scheduledAt: null }))
-              setStep(2)
+              setBooking((prev) => ({ ...prev, barber, scheduledAt: null }));
+              setStep(2);
             }}
             onBack={() => setStep(0)}
           />
@@ -213,42 +269,54 @@ export default function BookingPage() {
             service={booking.service}
             barber={booking.barber}
             onSelect={(scheduledAt) => {
-              setBooking((prev) => ({ ...prev, scheduledAt }))
-              setStep(3)
+              setBooking((prev) => ({ ...prev, scheduledAt }));
+              setStep(3);
             }}
             onBack={() => setStep(1)}
           />
         )}
-        {step === 3 && booking.service && booking.barber && booking.scheduledAt && (
-          <StepClientInfo
-            slug={slug}
-            booking={{
-              service: booking.service,
-              barber: booking.barber,
-              scheduledAt: booking.scheduledAt,
-              appointment: booking.appointment,
-            }}
-            onSuccess={(appointment) => {
-              setBooking((prev) => ({ ...prev, appointment }))
-              setStep(4)
-            }}
-            onBack={() => setStep(2)}
-          />
-        )}
-        {step === 4 && booking.appointment && booking.service && booking.barber && booking.scheduledAt && (
-          <StepSuccess
-            appointment={booking.appointment}
-            service={booking.service}
-            barber={booking.barber}
-            scheduledAt={booking.scheduledAt}
-            shopName={shop?.name ?? 'Barbearia'}
-            onNewBooking={() => {
-              setStep(0)
-              setBooking({ service: null, barber: null, scheduledAt: null, appointment: null })
-            }}
-          />
-        )}
+        {step === 3 &&
+          booking.service &&
+          booking.barber &&
+          booking.scheduledAt && (
+            <StepClientInfo
+              slug={slug}
+              booking={{
+                service: booking.service,
+                barber: booking.barber,
+                scheduledAt: booking.scheduledAt,
+                appointment: booking.appointment,
+              }}
+              onSuccess={(appointment) => {
+                setBooking((prev) => ({ ...prev, appointment }));
+                setStep(4);
+              }}
+              onBack={() => setStep(2)}
+            />
+          )}
+        {step === 4 &&
+          booking.appointment &&
+          booking.service &&
+          booking.barber &&
+          booking.scheduledAt && (
+            <StepSuccess
+              appointment={booking.appointment}
+              service={booking.service}
+              barber={booking.barber}
+              scheduledAt={booking.scheduledAt}
+              shopName={shop?.name ?? "Barbearia"}
+              onNewBooking={() => {
+                setStep(0);
+                setBooking({
+                  service: null,
+                  barber: null,
+                  scheduledAt: null,
+                  appointment: null,
+                });
+              }}
+            />
+          )}
       </div>
     </div>
-  )
+  );
 }

@@ -6,17 +6,17 @@ SaaS de agendamento para barbearias. Multi-tenant: cada barbearia é um cliente 
 
 ## Stack
 
-| Ferramenta | Uso |
-|---|---|
-| React 19 + TypeScript | UI |
-| Vite | Build |
-| Tailwind CSS v3 + shadcn/ui | Estilo e componentes |
-| React Query v5 | Server state |
-| React Hook Form + Zod | Formulários e validação |
-| Zustand | Auth state (token JWT) |
-| Axios | HTTP client |
-| date-fns | Manipulação de datas |
-| React Router v7 | Roteamento |
+| Ferramenta                  | Uso                     |
+| --------------------------- | ----------------------- |
+| React 19 + TypeScript       | UI                      |
+| Vite                        | Build                   |
+| Tailwind CSS v3 + shadcn/ui | Estilo e componentes    |
+| React Query v5              | Server state            |
+| React Hook Form + Zod       | Formulários e validação |
+| Zustand                     | Auth state (token JWT)  |
+| Axios                       | HTTP client             |
+| date-fns                    | Manipulação de datas    |
+| React Router v7             | Roteamento              |
 
 ---
 
@@ -47,7 +47,7 @@ npm run dev
 /admin/login             → login do painel admin
 /admin/dashboard         → dashboard (protegido)
 /admin/appointments      → agenda completa (protegido)
-/admin/barbers           → gestão de barbeiros (protegido)
+/admin/barbers           → gestão de Funcionarios (protegido)
 /admin/services          → gestão de serviços (protegido)
 /admin/schedule          → horários de trabalho (protegido)
 /admin/billing           → faturamento / assinatura (protegido)
@@ -68,7 +68,7 @@ Fluxo em 4 passos:
 
 ```
 1. Escolhe o serviço       → StepSelectService.tsx
-2. Escolhe o barbeiro      → StepSelectBarber.tsx
+2. Escolhe o Funcionario      → StepSelectBarber.tsx
 3. Escolhe data e horário  → StepSelectDateTime.tsx
 4. Informa nome e telefone → StepClientInfo.tsx
                            → StepSuccess.tsx (tela de confirmação)
@@ -112,15 +112,15 @@ Visão geral do dia atual:
 
 ---
 
-### `/admin/barbers` — Barbeiros
+### `/admin/barbers` — Funcionarios
 
 **Arquivo:** `src/pages/admin/BarbersPage.tsx`  
 **Acesso:** OWNER
 
-- Lista de barbeiros com status ativo/inativo
-- Criar e editar barbeiros (nome + telefone)
-- Remover barbeiro (com confirmação)
-- Expandir barbeiro para ver/editar quais serviços ele oferece (checkboxes)
+- Lista de Funcionarios com status ativo/inativo
+- Criar e editar Funcionarios (nome + telefone)
+- Remover Funcionario (com confirmação)
+- Expandir Funcionario para ver/editar quais serviços ele oferece (checkboxes)
 
 ---
 
@@ -141,7 +141,7 @@ Visão geral do dia atual:
 **Arquivo:** `src/pages/admin/SchedulePage.tsx`  
 **Acesso:** OWNER
 
-- Seleciona um barbeiro no dropdown
+- Seleciona um Funcionario no dropdown
 - Exibe os 7 dias da semana (Seg–Dom)
 - Para cada dia: toggle ativo + horário de início + horário de fim
 - Botão "Salvar" persiste via `PUT /api/admin/schedule/{barberId}`
@@ -181,6 +181,7 @@ RoleRoute        → verifica se user.role === role exigida
 ```
 
 O axios interceptor (`src/api/axios.ts`) faz:
+
 - Anexa `Authorization: Bearer <token>` em toda request
 - Se receber **401**: tenta refresh automático do token
 - Se receber **402**: redireciona para `/admin/billing?expired=true`
@@ -252,8 +253,8 @@ src/
 
 ## Roles
 
-| Role | Acesso |
-|---|---|
-| `SUPER_ADMIN` | `/super/tenants` + painel admin completo |
-| `OWNER` | Painel admin completo (todas as rotas `/admin/*`) |
-| `BARBER` | Dashboard e agenda (somente leitura/ações básicas) |
+| Role          | Acesso                                             |
+| ------------- | -------------------------------------------------- |
+| `SUPER_ADMIN` | `/super/tenants` + painel admin completo           |
+| `OWNER`       | Painel admin completo (todas as rotas `/admin/*`)  |
+| `BARBER`      | Dashboard e agenda (somente leitura/ações básicas) |

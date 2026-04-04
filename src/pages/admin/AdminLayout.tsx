@@ -10,6 +10,7 @@ import {
   CreditCard,
   LogOut,
   Menu,
+  Package,
   Scissors as ScissorsIcon,
   Palette,
   MapPin,
@@ -29,8 +30,9 @@ import { differenceInDays } from 'date-fns'
 const navItems = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/appointments', label: 'Agenda', icon: Calendar },
-  { to: '/admin/barbers', label: 'Barbeiros', icon: Users },
+  { to: '/admin/barbers', label: 'Funcionarios', icon: Users },
   { to: '/admin/services', label: 'Serviços', icon: Scissors },
+  { to: '/admin/products', label: 'Produtos', icon: Package },
   { to: '/admin/schedule', label: 'Configurações', icon: Settings },
   { to: '/admin/billing', label: 'Faturamento', icon: CreditCard },
   { to: '/admin/branding', label: 'Aparência', icon: Palette, ownerOnly: true },

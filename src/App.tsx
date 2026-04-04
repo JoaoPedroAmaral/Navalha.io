@@ -11,6 +11,7 @@ import ServicesPage from '@/pages/admin/ServicesPage'
 import SchedulePage from '@/pages/admin/SchedulePage'
 import BillingPage from '@/pages/admin/BillingPage'
 import BrandingPage from '@/pages/admin/BrandingPage'
+import ProductsPage from '@/pages/admin/ProductsPage'
 import BookingPage from '@/pages/booking/BookingPage'
 import SuperTenantsPage from '@/pages/super/SuperTenantsPage'
 
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="billing" element={<BillingPage />} />
           <Route path="branding" element={<BrandingPage />} />
+          <Route path="products" element={<ProductsPage />} />
         </Route>
 
         {/* Super admin */}

@@ -3,6 +3,7 @@ import type {
   Appointment,
   AppointmentStatus,
   Barber,
+  Product,
   Service,
   WorkSchedule,
   BillingStatus,
@@ -84,6 +85,33 @@ export async function updateService(
 
 export async function deleteService(id: string): Promise<void> {
   await api.delete(`/api/admin/services/${id}`)
+}
+
+// Products
+export async function getProducts(): Promise<Product[]> {
+  const { data } = await api.get('/api/admin/products')
+  return data
+}
+
+export async function createProduct(payload: {
+  name: string
+  price: number
+  description?: string
+}): Promise<Product> {
+  const { data } = await api.post('/api/admin/products', payload)
+  return data
+}
+
+export async function updateProduct(
+  id: string,
+  payload: Partial<{ name: string; price: number; description: string; active: boolean }>
+): Promise<Product> {
+  const { data } = await api.put(`/api/admin/products/${id}`, payload)
+  return data
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  await api.delete(`/api/admin/products/${id}`)
 }
 
 // Schedule

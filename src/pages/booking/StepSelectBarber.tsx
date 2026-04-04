@@ -1,26 +1,31 @@
-import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft } from 'lucide-react'
-import { getPublicBarbers } from '@/api/public'
-import { Button } from '@/components/ui/button'
-import type { Service, Barber } from '@/types'
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft } from "lucide-react";
+import { getPublicBarbers } from "@/api/public";
+import { Button } from "@/components/ui/button";
+import type { Service, Barber } from "@/types";
 
 interface Props {
-  slug: string
-  selectedService: Service
-  onSelect: (barber: Barber) => void
-  onBack: () => void
+  slug: string;
+  selectedService: Service;
+  onSelect: (barber: Barber) => void;
+  onBack: () => void;
 }
 
-export default function StepSelectBarber({ slug, selectedService, onSelect, onBack }: Props) {
+export default function StepSelectBarber({
+  slug,
+  selectedService,
+  onSelect,
+  onBack,
+}: Props) {
   const { data: barbers = [], isLoading } = useQuery({
-    queryKey: ['public-barbers', slug],
+    queryKey: ["public-barbers", slug],
     queryFn: () => getPublicBarbers(slug),
-  })
+  });
 
   // Filter barbers who offer the selected service
   const eligibleBarbers = barbers.filter(
-    (b) => b.active && b.services.some((s) => s.id === selectedService.id)
-  )
+    (b) => b.active && b.services.some((s) => s.id === selectedService.id),
+  );
 
   return (
     <div className="space-y-4">
@@ -29,7 +34,9 @@ export default function StepSelectBarber({ slug, selectedService, onSelect, onBa
           <ChevronLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Escolha o barbeiro</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            Escolha o Funcionario
+          </h2>
           <p className="text-sm text-gray-500">
             Serviço: <strong>{selectedService.name}</strong>
           </p>
@@ -39,12 +46,15 @@ export default function StepSelectBarber({ slug, selectedService, onSelect, onBa
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-20 bg-gray-200 rounded-xl animate-pulse" />
+            <div
+              key={i}
+              className="h-20 bg-gray-200 rounded-xl animate-pulse"
+            />
           ))}
         </div>
       ) : eligibleBarbers.length === 0 ? (
         <div className="text-center py-10 text-gray-400 bg-white rounded-xl border">
-          Nenhum barbeiro disponível para este serviço
+          Nenhum Funcionario disponível para este serviço
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -62,7 +72,8 @@ export default function StepSelectBarber({ slug, selectedService, onSelect, onBa
                   {barber.name}
                 </p>
                 <p className="text-sm text-gray-400 mt-0.5">
-                  {barber.services.length} serviço{barber.services.length !== 1 ? 's' : ''}
+                  {barber.services.length} serviço
+                  {barber.services.length !== 1 ? "s" : ""}
                 </p>
               </div>
             </button>
@@ -70,5 +81,5 @@ export default function StepSelectBarber({ slug, selectedService, onSelect, onBa
         </div>
       )}
     </div>
-  )
+  );
 }
