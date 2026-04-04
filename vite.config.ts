@@ -12,7 +12,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:21806',
+        target: 'https://backbarbearia-69p3.onrender.com',
         changeOrigin: true,
       },
     },
