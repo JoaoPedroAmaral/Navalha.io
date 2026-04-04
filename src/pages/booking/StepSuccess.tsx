@@ -51,9 +51,9 @@ export default function StepSuccess({
           <span>Com <strong>{barber.name}</strong></span>
         </div>
 
-        <div className="flex items-center gap-3 text-sm text-gray-600">
-          <Calendar className="w-4 h-4 text-tenant-secondary shrink-0" />
-          <span>
+        <div className="flex items-start gap-3 text-sm text-gray-600">
+          <Calendar className="w-4 h-4 text-tenant-secondary shrink-0 mt-0.5" />
+          <span className="break-words">
             {format(scheduledDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </span>
         </div>

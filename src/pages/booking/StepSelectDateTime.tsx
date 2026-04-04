@@ -79,10 +79,10 @@ export default function StepSelectDateTime({ slug, service, barber, onSelect, on
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {visibleDays.map((day) => (
             <div key={`label-${day.toISOString()}`} className="text-center text-xs text-gray-400 py-1">
-              {format(day, 'EEE', { locale: ptBR })}
+              {format(day, 'EEEEE', { locale: ptBR })}
             </div>
           ))}
           {visibleDays.map((day) => {
@@ -92,7 +92,7 @@ export default function StepSelectDateTime({ slug, service, barber, onSelect, on
               <button
                 key={day.toISOString()}
                 onClick={() => setSelectedDate(day)}
-                className={`py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[36px] ${
                   isSelected
                     ? 'bg-tenant-secondary text-white'
                     : isToday
@@ -124,7 +124,7 @@ export default function StepSelectDateTime({ slug, service, barber, onSelect, on
             Nenhum horário disponível neste dia
           </div>
         ) : (
-          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
             {availableSlots.map((slot) => {
               const timeNormalized = slot.time.split(':').length === 2 ? `${slot.time}:00` : slot.time
               const scheduledAt = `${dateStr}T${timeNormalized}`
@@ -132,7 +132,7 @@ export default function StepSelectDateTime({ slug, service, barber, onSelect, on
                 <button
                   key={slot.time}
                   onClick={() => onSelect(scheduledAt)}
-                  className="py-2 px-1 rounded-lg border-2 border-transparent bg-gray-50 hover:border-tenant-secondary hover:bg-gray-100 text-sm font-medium text-gray-700 transition-all text-center"
+                  className="py-2.5 px-1 rounded-lg border-2 border-transparent bg-gray-50 hover:border-tenant-secondary hover:bg-gray-100 text-sm font-medium text-gray-700 transition-all text-center min-h-[44px]"
                 >
                   {slot.time}
                 </button>

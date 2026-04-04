@@ -23,13 +23,13 @@ function MetricCard({
   borderClass: string
 }) {
   return (
-    <div className={`bg-white rounded-xl border-l-4 ${borderClass} shadow-sm p-5 flex items-center gap-4`}>
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorClass}`}>
+    <div className={`bg-white rounded-xl border-l-4 ${borderClass} shadow-sm p-4 sm:p-5 flex items-center gap-3 sm:gap-4 min-w-0`}>
+      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${colorClass}`}>
         <Icon className="w-5 h-5 text-white" />
       </div>
-      <div>
-        <p className="text-2xl font-bold text-gray-900 leading-none">{value}</p>
-        <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide font-medium">{label}</p>
+      <div className="min-w-0">
+        <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-none">{value}</p>
+        <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide font-medium truncate">{label}</p>
       </div>
     </div>
   )
@@ -62,14 +62,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 text-sm capitalize">
+          <p className="text-gray-500 text-sm capitalize truncate">
             {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full border border-green-200">
+        <div className="hidden sm:flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full border border-green-200 shrink-0">
           <TrendingUp className="w-3.5 h-3.5" />
           Hoje
         </div>

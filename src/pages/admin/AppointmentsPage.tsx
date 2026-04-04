@@ -113,11 +113,12 @@ export default function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-        <Button variant="gold" onClick={() => setDialogOpen(true)}>
+        <Button variant="gold" onClick={() => setDialogOpen(true)} className="shrink-0">
           <Plus className="w-4 h-4" />
-          Novo agendamento
+          <span className="hidden sm:inline">Novo agendamento</span>
+          <span className="sm:hidden">Novo</span>
         </Button>
       </div>
 

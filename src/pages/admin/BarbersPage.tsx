@@ -139,11 +139,12 @@ export default function BarbersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900">Barbeiros</h1>
-        <Button variant="gold" onClick={openCreate}>
+        <Button variant="gold" onClick={openCreate} className="shrink-0">
           <Plus className="w-4 h-4" />
-          Novo barbeiro
+          <span className="hidden sm:inline">Novo barbeiro</span>
+          <span className="sm:hidden">Novo</span>
         </Button>
       </div>
 
@@ -172,16 +173,16 @@ export default function BarbersPage() {
         <div className="space-y-3">
           {barbers.map((barber) => (
             <div key={barber.id} className="bg-white rounded-xl border shadow-sm">
-              <div className="flex items-center gap-4 p-5">
+              <div className="flex items-center gap-3 p-4 sm:p-5">
                 <div className="w-10 h-10 rounded-full bg-sidebar flex items-center justify-center text-gold font-bold text-sm shrink-0">
                   {barber.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900">{barber.name}</p>
-                  <p className="text-sm text-gray-500">{formatPhone(barber.phone)}</p>
+                  <p className="font-semibold text-gray-900 truncate">{barber.name}</p>
+                  <p className="text-sm text-gray-500 truncate">{formatPhone(barber.phone)}</p>
                 </div>
                 <span
-                  className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                  className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${
                     barber.active
                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       : 'bg-gray-100 text-gray-500'
@@ -189,7 +190,7 @@ export default function BarbersPage() {
                 >
                   {barber.active ? 'Ativo' : 'Inativo'}
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 shrink-0">
                   <Button
                     size="sm"
                     variant="ghost"

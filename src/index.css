@@ -65,7 +65,7 @@
   .table-scroll-mobile thead {
     display: none;
   }
-  
+
   .table-scroll-mobile tbody tr {
     display: flex;
     flex-direction: column;
@@ -73,25 +73,32 @@
     border-bottom: 1px solid hsl(var(--border));
     gap: 0.25rem;
   }
-  
+
   .table-scroll-mobile tbody tr:hover {
     background-color: transparent;
   }
-  
+
   .table-scroll-mobile tbody td {
     display: flex;
+    align-items: center;
     padding: 0.25rem 0;
     border: none !important;
+    min-width: 0;
   }
-  
+
   .table-scroll-mobile tbody td::before {
     content: attr(data-label);
     font-size: 0.7rem;
     font-weight: 600;
     color: hsl(var(--muted-foreground));
     text-transform: uppercase;
-    width: 80px;
+    min-width: 70px;
+    width: 70px;
     flex-shrink: 0;
+  }
+
+  .table-scroll-mobile tbody td > * {
+    min-width: 0;
   }
 }
 

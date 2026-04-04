@@ -104,11 +104,12 @@ export default function ServicesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900">Serviços</h1>
-        <Button variant="gold" onClick={openCreate}>
+        <Button variant="gold" onClick={openCreate} className="shrink-0">
           <Plus className="w-4 h-4" />
-          Novo serviço
+          <span className="hidden sm:inline">Novo serviço</span>
+          <span className="sm:hidden">Novo</span>
         </Button>
       </div>
 
@@ -151,7 +152,7 @@ export default function ServicesPage() {
                       {svc.durationMinutes} min
                     </td>
                     <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 font-semibold text-gray-800 text-sm" data-label="Preço">{formatCurrency(svc.price)}</td>
-                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 w-[110px] sm:w-[130px]" data-label="Status">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5" data-label="Status">
                       <button
                         onClick={() => toggleMutation.mutate(svc)}
                         className="flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity"
@@ -159,12 +160,12 @@ export default function ServicesPage() {
                       >
                         {svc.active ? (
                           <>
-                            <ToggleRight className="w-5 h-5 text-emerald-500" />
+                            <ToggleRight className="w-5 h-5 text-emerald-500 shrink-0" />
                             <span className="text-emerald-600 font-medium">Ativo</span>
                           </>
                         ) : (
                           <>
-                            <ToggleLeft className="w-5 h-5 text-gray-400" />
+                            <ToggleLeft className="w-5 h-5 text-gray-400 shrink-0" />
                             <span className="text-gray-400">Inativo</span>
                           </>
                         )}

@@ -101,13 +101,13 @@ export default function BookingPage() {
       {/* Progress */}
       {step < 4 && (
         <div className="bg-white border-b shadow-sm">
-          <div className="max-w-2xl mx-auto px-4 py-3">
-            <div className="flex items-center gap-1">
+          <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3">
+            <div className="flex items-center justify-center gap-0">
               {STEPS.slice(0, 4).map((label, idx) => (
-                <div key={label} className="flex items-center flex-1">
-                  <div className="flex items-center gap-1.5">
+                <div key={label} className="flex items-center flex-1 min-w-0">
+                  <div className="flex flex-col items-center gap-1 flex-shrink-0">
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                         idx < step
                           ? 'bg-green-500 text-white'
                           : idx === step
@@ -118,7 +118,7 @@ export default function BookingPage() {
                       {idx < step ? '✓' : idx + 1}
                     </div>
                     <span
-                      className={`text-xs hidden sm:block font-medium ${
+                      className={`text-xs font-medium leading-tight text-center max-w-[56px] truncate ${
                         idx === step ? 'text-gray-900' : 'text-gray-400'
                       }`}
                     >
@@ -127,7 +127,7 @@ export default function BookingPage() {
                   </div>
                   {idx < 3 && (
                     <div
-                      className={`flex-1 h-px mx-2 ${idx < step ? 'bg-green-400' : 'bg-gray-200'}`}
+                      className={`flex-1 h-px mx-1 sm:mx-2 mt-[-14px] ${idx < step ? 'bg-green-400' : 'bg-gray-200'}`}
                     />
                   )}
                 </div>
@@ -139,21 +139,21 @@ export default function BookingPage() {
 
       {/* Barbershop info bar */}
       {shop && (shop.mapsUrl || shop.contactPhone || shop.instagramUrl || shop.openingHours || shop.operationDays) && (
-        <div className="bg-white border-b">
-          <div className="max-w-2xl mx-auto px-4 py-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        <div className="bg-white border-b overflow-x-auto">
+          <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-x-4 gap-y-1 flex-wrap min-w-0">
             {shop.mapsUrl && (
               <a
                 href={shop.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors whitespace-nowrap"
               >
                 <MapPin className="w-3 h-3 shrink-0" />
                 Ver no mapa
               </a>
             )}
             {shop.contactPhone && (
-              <span className="flex items-center gap-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
                 <Phone className="w-3 h-3 shrink-0" />
                 {formatPhoneDisplay(shop.contactPhone)}
               </span>
@@ -163,20 +163,20 @@ export default function BookingPage() {
                 href={shop.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors whitespace-nowrap"
               >
                 <ExternalLink className="w-3 h-3 shrink-0" />
                 @{shop.instagramUrl.replace(/.*instagram\.com\//, '').replace(/\/$/, '')}
               </a>
             )}
             {shop.openingHours && (
-              <span className="flex items-center gap-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
                 <Clock className="w-3 h-3 shrink-0" />
                 {shop.openingHours}
               </span>
             )}
             {shop.operationDays && (
-              <span className="flex items-center gap-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
                 <CalendarDays className="w-3 h-3 shrink-0" />
                 {shop.operationDays}
               </span>

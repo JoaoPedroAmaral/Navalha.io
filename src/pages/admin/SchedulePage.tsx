@@ -137,11 +137,11 @@ export default function SchedulePage() {
               return (
                 <div
                   key={day.key}
-                  className={`flex flex-wrap items-center gap-4 px-5 py-4 ${
+                  className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 ${
                     !row.active ? 'opacity-50' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 w-40 shrink-0">
+                  <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
                     <Checkbox
                       checked={row.active}
                       onCheckedChange={(checked) =>
@@ -150,13 +150,13 @@ export default function SchedulePage() {
                     />
                     <span className="text-sm font-medium text-gray-700">{day.label}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 pl-6 sm:pl-0">
                     <Input
                       type="time"
                       value={row.startTime}
                       disabled={!row.active}
                       onChange={(e) => updateDay(day.key, 'startTime', e.target.value)}
-                      className="w-32"
+                      className="w-28 sm:w-32"
                     />
                     <span className="text-gray-400 text-sm">até</span>
                     <Input
@@ -164,7 +164,7 @@ export default function SchedulePage() {
                       value={row.endTime}
                       disabled={!row.active}
                       onChange={(e) => updateDay(day.key, 'endTime', e.target.value)}
-                      className="w-32"
+                      className="w-28 sm:w-32"
                     />
                   </div>
                 </div>
