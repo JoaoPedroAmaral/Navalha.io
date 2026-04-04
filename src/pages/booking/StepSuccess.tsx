@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { CheckCircle, Calendar, Clock, User, Scissors, Plus, Share2 } from 'lucide-react'
+import { CheckCircle, Calendar, Clock, User, Scissors, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Appointment, Service, Barber } from '@/types'
 
@@ -14,24 +14,13 @@ interface Props {
 }
 
 export default function StepSuccess({
-  appointment,
   service,
   barber,
   scheduledAt,
   shopName,
   onNewBooking,
-}: Props) {
+}: Readonly<Props>) {
   const scheduledDate = new Date(scheduledAt)
-  const clientInitial = appointment.clientName?.charAt(0)?.toUpperCase() ?? '?'
-  const formattedDate = format(scheduledDate, "d 'de' MMMM", { locale: ptBR })
-  const formattedTime = format(scheduledDate, 'HH:mm')
-
-  function buildWhatsAppUrl(): string {
-    const bookingUrl = window.location.href
-    const message =
-      `Agendei um ${service.name} na ${shopName} para ${formattedDate} às ${formattedTime} com ${barber.name}. 📱 Agende você também: ${bookingUrl}`
-    return `https://wa.me/?text=${encodeURIComponent(message)}`
-  }
 
   return (
     <div className="space-y-6 text-center">
