@@ -4,7 +4,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { format } from 'date-fns'
-import { Plus, Check, X as XIcon, CheckCircle } from 'lucide-react'
+import { Plus, Check, X as XIcon, CheckCircle, Calendar } from 'lucide-react'
 import {
   getAppointments,
   updateAppointmentStatus,
@@ -154,44 +154,59 @@ export default function AppointmentsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border">
+      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center text-gray-400">Carregando...</div>
+          <div className="divide-y">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="px-4 py-3 flex items-center gap-4 animate-pulse sm:px-5">
+                <div className="w-12 sm:w-16 h-4 bg-gray-200 rounded" />
+                <div className="flex-1 space-y-2">
+                  <div className="w-24 sm:w-32 h-4 bg-gray-200 rounded" />
+                  <div className="w-20 sm:w-24 h-3 bg-gray-100 rounded" />
+                </div>
+                <div className="w-16 sm:w-20 h-6 bg-gray-200 rounded-full" />
+              </div>
+            ))}
+          </div>
         ) : appointments.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">Nenhum agendamento encontrado</div>
+          <div className="p-8 sm:p-12 text-center">
+            <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-400 font-medium">Nenhum agendamento encontrado</p>
+            <p className="text-gray-300 text-sm mt-1">Tente mudar os filtros</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="table-scroll-mobile">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Data/Hora</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Cliente</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600 hidden sm:table-cell">Barbeiro</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600 hidden md:table-cell">Serviço</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Status</th>
-                  <th className="text-right px-5 py-3 font-medium text-gray-600">Ações rápidas</th>
+                <tr className="border-b bg-gray-50/80">
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Data/Hora</th>
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Cliente</th>
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide hidden sm:table-cell">Barbeiro</th>
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide hidden md:table-cell">Serviço</th>
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Status</th>
+                  <th className="text-right px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Ações rápidas</th>
                 </tr>
               </thead>
               <tbody>
                 {appointments.map((appt) => (
-                  <tr key={appt.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="px-5 py-3 font-mono text-gray-700 whitespace-nowrap">
+                  <tr key={appt.id} className="border-b last:border-0 md:hover:bg-gray-50/60 transition-colors">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 font-mono text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap" data-label="Data/Hora">
                       {format(new Date(appt.scheduledAt), 'dd/MM HH:mm')}
                     </td>
-                    <td className="px-5 py-3">
-                      <p className="font-medium text-gray-900">{appt.clientName}</p>
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5" data-label="Cliente">
+                      <p className="font-semibold text-gray-900 text-sm">{appt.clientName}</p>
                       <p className="text-gray-400 text-xs">{appt.clientPhone}</p>
                     </td>
-                    <td className="px-5 py-3 hidden sm:table-cell text-gray-600">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 hidden sm:table-cell text-gray-600 text-sm" data-label="Barbeiro">
                       {appt.barberName ?? '—'}
                     </td>
-                    <td className="px-5 py-3 hidden md:table-cell text-gray-600">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 hidden md:table-cell text-gray-600 text-sm" data-label="Serviço">
                       {appt.serviceName ?? '—'}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5" data-label="Status">
                       <StatusBadge status={appt.status} />
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3" data-label="Ações">
                       <div className="flex items-center justify-end gap-1">
                         {appt.status === 'PENDING' && (
                           <Button
@@ -209,9 +224,10 @@ export default function AppointmentsPage() {
                             size="sm"
                             variant="gold"
                             onClick={() => statusMutation.mutate({ id: appt.id, status: 'COMPLETED' })}
-                            title="Concluir"
+                            title="Marcar como concluído"
                           >
                             <CheckCircle className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Concluir</span>
                           </Button>
                         )}
                         {(appt.status === 'PENDING' || appt.status === 'CONFIRMED') && (

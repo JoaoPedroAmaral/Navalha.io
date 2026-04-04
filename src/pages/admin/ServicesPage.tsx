@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Scissors } from 'lucide-react'
 import { getServices, createService, updateService, deleteService } from '@/api/admin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -67,20 +67,26 @@ export default function ServicesPage() {
   }
 
   const saveMutation = useMutation({
-    mutationFn: (data: ServiceForm) => {
-      if (editService) return updateService(editService.id, data)
+    mutationFn: ({ data, isEdit }: { data: ServiceForm; isEdit: boolean; serviceId?: string }) => {
+      if (isEdit && editService) return updateService(editService.id, data)
       return createService(data)
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       void qc.invalidateQueries({ queryKey: ['services'] })
-      toast({ variant: 'success', title: editService ? 'Serviço atualizado' : 'Serviço criado' })
+      toast({ variant: 'success', title: variables.isEdit ? 'Serviço atualizado' : 'Serviço criado' })
       setDialogOpen(false)
     },
     onError: () => toast({ variant: 'destructive', title: 'Erro ao salvar serviço' }),
   })
 
   const toggleMutation = useMutation({
-    mutationFn: (svc: Service) => updateService(svc.id, { active: !svc.active }),
+    mutationFn: (svc: Service) =>
+      updateService(svc.id, {
+        name: svc.name,
+        durationMinutes: svc.durationMinutes,
+        price: svc.price,
+        active: !svc.active,
+      }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['services'] })
     },
@@ -106,40 +112,55 @@ export default function ServicesPage() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl border">
+      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center text-gray-400">Carregando...</div>
+          <div className="divide-y">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="px-4 py-3 flex items-center gap-4 animate-pulse sm:px-5">
+                <div className="flex-1 space-y-2">
+                  <div className="w-32 sm:w-40 h-4 bg-gray-200 rounded" />
+                  <div className="w-20 sm:w-24 h-3 bg-gray-100 rounded" />
+                </div>
+                <div className="w-14 sm:w-16 h-6 bg-gray-200 rounded-full" />
+              </div>
+            ))}
+          </div>
         ) : services.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">Nenhum serviço cadastrado</div>
+          <div className="p-8 sm:p-12 text-center">
+            <Scissors className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-400 font-medium">Nenhum serviço cadastrado</p>
+            <p className="text-gray-300 text-sm mt-1">Adicione seu primeiro serviço</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="table-scroll-mobile">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Nome</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600 hidden sm:table-cell">Duração</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Preço</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Status</th>
-                  <th className="text-right px-5 py-3 font-medium text-gray-600">Ações</th>
+                <tr className="border-b bg-gray-50/80">
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Nome</th>
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide hidden sm:table-cell">Duração</th>
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Preço</th>
+                  <th className="text-left px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Status</th>
+                  <th className="text-right px-3 py-2.5 sm:px-5 sm:py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {services.map((svc) => (
-                  <tr key={svc.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="px-5 py-3 font-medium text-gray-900">{svc.name}</td>
-                    <td className="px-5 py-3 text-gray-600 hidden sm:table-cell">
+                  <tr key={svc.id} className="border-b last:border-0 md:hover:bg-gray-50/60 transition-colors">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 font-semibold text-gray-900 text-sm" data-label="Nome">{svc.name}</td>
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 text-gray-500 hidden sm:table-cell text-sm" data-label="Duração">
                       {svc.durationMinutes} min
                     </td>
-                    <td className="px-5 py-3 text-gray-600">{formatCurrency(svc.price)}</td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 font-semibold text-gray-800 text-sm" data-label="Preço">{formatCurrency(svc.price)}</td>
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 w-[110px] sm:w-[130px]" data-label="Status">
                       <button
                         onClick={() => toggleMutation.mutate(svc)}
-                        className="flex items-center gap-1.5 text-sm"
+                        className="flex items-center gap-1.5 text-sm hover:opacity-80 transition-opacity"
+                        title={svc.active ? 'Clique para desativar' : 'Clique para ativar'}
                       >
                         {svc.active ? (
                           <>
-                            <ToggleRight className="w-5 h-5 text-green-500" />
-                            <span className="text-green-600">Ativo</span>
+                            <ToggleRight className="w-5 h-5 text-emerald-500" />
+                            <span className="text-emerald-600 font-medium">Ativo</span>
                           </>
                         ) : (
                           <>
@@ -149,9 +170,9 @@ export default function ServicesPage() {
                         )}
                       </button>
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-2.5 sm:px-5 sm:py-3.5" data-label="Ações">
                       <div className="flex items-center justify-end gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => openEdit(svc)}>
+                        <Button size="sm" variant="ghost" onClick={() => openEdit(svc)} title="Editar">
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <AlertDialog>
@@ -197,7 +218,7 @@ export default function ServicesPage() {
           <DialogHeader>
             <DialogTitle>{editService ? 'Editar serviço' : 'Novo serviço'}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit((d: ServiceForm) => saveMutation.mutate(d))} className="space-y-4">
+          <form onSubmit={handleSubmit((d: ServiceForm) => saveMutation.mutate({ data: d, isEdit: !!editService }))} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Nome</Label>
               <Input placeholder="Ex: Corte de cabelo" {...register('name')} />

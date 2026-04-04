@@ -5,7 +5,6 @@ import {
   addDays,
   startOfDay,
   isSameDay,
-  parseISO,
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -127,8 +126,8 @@ export default function StepSelectDateTime({ slug, service, barber, onSelect, on
         ) : (
           <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
             {availableSlots.map((slot) => {
-              const dt = parseISO(`${dateStr}T${slot.time}`)
-              const scheduledAt = dt.toISOString()
+              const timeNormalized = slot.time.split(':').length === 2 ? `${slot.time}:00` : slot.time
+              const scheduledAt = `${dateStr}T${timeNormalized}`
               return (
                 <button
                   key={slot.time}

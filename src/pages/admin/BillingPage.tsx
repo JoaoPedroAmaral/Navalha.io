@@ -51,7 +51,7 @@ export default function BillingPage() {
 
   const trialDaysLeft =
     billing && !billing.subscriptionActive && billing.trialEndsAt
-      ? differenceInDays(parseISO(billing.trialEndsAt), new Date())
+      ? differenceInDays(new Date(billing.trialEndsAt), new Date())
       : null
 
   return (
@@ -143,7 +143,7 @@ export default function BillingPage() {
               className="gap-2"
             >
               <CreditCard className="w-4 h-4" />
-              Assinar agora
+              {trialDaysLeft !== null && trialDaysLeft < 0 ? 'Renovar assinatura' : 'Assinar agora'}
             </Button>
           )}
 

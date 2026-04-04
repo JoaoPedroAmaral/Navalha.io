@@ -97,4 +97,9 @@ export interface PublicBarbershop {
   logoUrl?: string | null
   primaryColor?: string | null
   secondaryColor?: string | null
+  openingHours?: string | null
+  operationDays?: string | null
+  contactPhone?: string | null
+  instagramUrl?: string | null
+  mapsUrl?: string | null
 }

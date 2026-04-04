@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getPublicBarbershop } from '@/api/public'
 import { applyTenantTheme, resetTenantTheme } from '@/lib/applyTenantTheme'
-import { Scissors } from 'lucide-react'
+import { Scissors, MapPin, Phone, ExternalLink, Clock, CalendarDays } from 'lucide-react'
+import { formatPhoneDisplay } from '@/components/ui/phone-input'
 import StepSelectService from './StepSelectService'
 import StepSelectBarber from './StepSelectBarber'
 import StepSelectDateTime from './StepSelectDateTime'
@@ -30,16 +31,28 @@ export default function BookingPage() {
     appointment: null,
   })
 
+  const [themeReady, setThemeReady] = useState(false)
+
   const { data: shop, isLoading: shopLoading } = useQuery({
     queryKey: ['public-shop', slug],
     queryFn: () => getPublicBarbershop(slug!),
     enabled: !!slug,
   })
 
+  // useLayoutEffect fires synchronously after DOM mutations but before the
+  // browser paints, guaranteeing the CSS variables are set before any
+  // tenant-colored class is rendered on screen — even when the query
+  // resolves from cache on the very first render.
+  useLayoutEffect(() => {
+    if (!shopLoading) {
+      if (shop) applyTenantTheme(shop.primaryColor, shop.secondaryColor)
+      setThemeReady(true)
+    }
+  }, [shop, shopLoading])
+
   useEffect(() => {
-    if (shop) applyTenantTheme(shop.primaryColor, shop.secondaryColor)
     return () => resetTenantTheme()
-  }, [shop])
+  }, [])
 
   if (!slug) {
     return (
@@ -49,14 +62,14 @@ export default function BookingPage() {
     )
   }
 
-  if (shopLoading) {
+  if (shopLoading || !themeReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-12 h-12 rounded-xl bg-tenant-primary flex items-center justify-center mx-auto">
-            <Scissors className="w-6 h-6 text-tenant-secondary animate-pulse" />
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-14 h-14 rounded-xl bg-gray-800 flex items-center justify-center mx-auto">
+            <Scissors className="w-7 h-7 text-gray-400 animate-pulse" />
           </div>
-          <p className="text-gray-500">Carregando...</p>
+          <p className="text-sm text-gray-500 tracking-wide">Carregando...</p>
         </div>
       </div>
     )
@@ -120,6 +133,54 @@ export default function BookingPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Barbershop info bar */}
+      {shop && (shop.mapsUrl || shop.contactPhone || shop.instagramUrl || shop.openingHours || shop.operationDays) && (
+        <div className="bg-white border-b">
+          <div className="max-w-2xl mx-auto px-4 py-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            {shop.mapsUrl && (
+              <a
+                href={shop.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                <MapPin className="w-3 h-3 shrink-0" />
+                Ver no mapa
+              </a>
+            )}
+            {shop.contactPhone && (
+              <span className="flex items-center gap-1 text-xs text-gray-500">
+                <Phone className="w-3 h-3 shrink-0" />
+                {formatPhoneDisplay(shop.contactPhone)}
+              </span>
+            )}
+            {shop.instagramUrl && (
+              <a
+                href={shop.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                <ExternalLink className="w-3 h-3 shrink-0" />
+                @{shop.instagramUrl.replace(/.*instagram\.com\//, '').replace(/\/$/, '')}
+              </a>
+            )}
+            {shop.openingHours && (
+              <span className="flex items-center gap-1 text-xs text-gray-500">
+                <Clock className="w-3 h-3 shrink-0" />
+                {shop.openingHours}
+              </span>
+            )}
+            {shop.operationDays && (
+              <span className="flex items-center gap-1 text-xs text-gray-500">
+                <CalendarDays className="w-3 h-3 shrink-0" />
+                {shop.operationDays}
+              </span>
+            )}
           </div>
         </div>
       )}

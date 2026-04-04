@@ -29,7 +29,6 @@ api.interceptors.response.use(
     const originalRequest = error.config
 
     if (error.response?.status === 402) {
-      window.location.href = '/admin/billing?expired=true'
       return Promise.reject(error)
     }
 

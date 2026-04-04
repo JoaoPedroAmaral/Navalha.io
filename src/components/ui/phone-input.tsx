@@ -46,4 +46,4 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
 )
 PhoneInput.displayName = 'PhoneInput'
 
-export { PhoneInput }
+export { PhoneInput, formatPhoneDisplay }

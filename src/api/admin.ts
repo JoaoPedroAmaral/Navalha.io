@@ -101,19 +101,33 @@ export async function saveSchedule(
 }
 
 // Branding
-export async function getAdminBranding(): Promise<{
+export interface BrandingData {
+  name?: string
   logoUrl: string | null
   primaryColor: string | null
   secondaryColor: string | null
-}> {
+  openingHours?: string | null
+  operationDays?: string | null
+  contactPhone?: string | null
+  instagramUrl?: string | null
+  mapsUrl?: string | null
+}
+
+export async function getAdminBranding(): Promise<BrandingData> {
   const { data } = await api.get('/api/admin/branding')
   return data
 }
 
 export async function updateBranding(payload: {
+  name?: string
   logoUrl?: string
   primaryColor?: string
   secondaryColor?: string
+  openingHours?: string
+  operationDays?: string
+  contactPhone?: string
+  instagramUrl?: string
+  mapsUrl?: string
 }): Promise<void> {
   await api.patch('/api/admin/branding', payload)
 }

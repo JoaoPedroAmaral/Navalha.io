@@ -44,14 +44,14 @@ export default function StepClientInfo({ slug, booking, onSuccess, onBack }: Pro
 
   async function onSubmit(data: ClientForm) {
     try {
-      const result = await bookAppointment(slug, {
+      const appointment = await bookAppointment(slug, {
         clientName: data.clientName,
         clientPhone: data.clientPhone,
         barberId: booking.barber.id,
         serviceId: booking.service.id,
         scheduledAt: booking.scheduledAt,
       })
-      onSuccess(result as Appointment)
+      onSuccess(appointment)
     } catch {
       toast({
         variant: 'destructive',

@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { CheckCircle, Calendar, Clock, User, Scissors, Plus } from 'lucide-react'
+import { CheckCircle, Calendar, Clock, User, Scissors, Plus, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Appointment, Service, Barber } from '@/types'
 
@@ -23,6 +23,15 @@ export default function StepSuccess({
 }: Props) {
   const scheduledDate = new Date(scheduledAt)
   const clientInitial = appointment.clientName?.charAt(0)?.toUpperCase() ?? '?'
+  const formattedDate = format(scheduledDate, "d 'de' MMMM", { locale: ptBR })
+  const formattedTime = format(scheduledDate, 'HH:mm')
+
+  function buildWhatsAppUrl(): string {
+    const bookingUrl = window.location.href
+    const message =
+      `Agendei um ${service.name} na ${shopName} para ${formattedDate} às ${formattedTime} com ${barber.name}. 📱 Agende você também: ${bookingUrl}`
+    return `https://wa.me/?text=${encodeURIComponent(message)}`
+  }
 
   return (
     <div className="space-y-6 text-center">
@@ -83,6 +92,15 @@ export default function StepSuccess({
         <p className="text-sm text-gray-500">
           Anote o horário e apareça na barbearia alguns minutos antes.
         </p>
+        <a
+          href={buildWhatsAppUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full rounded-lg border border-green-600 bg-green-50 px-4 py-2.5 text-sm font-medium text-green-700 hover:bg-green-100 transition-colors"
+        >
+          <Share2 className="w-4 h-4 shrink-0" />
+          Compartilhar no WhatsApp
+        </a>
         <Button
           variant="gold"
           className="w-full"

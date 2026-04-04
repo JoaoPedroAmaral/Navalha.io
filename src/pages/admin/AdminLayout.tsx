@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { useState, useLayoutEffect } from 'react'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
   LayoutDashboard,
@@ -10,16 +10,21 @@ import {
   CreditCard,
   LogOut,
   Menu,
-  X,
   Scissors as ScissorsIcon,
   Palette,
+  MapPin,
+  Phone,
+  Clock,
+  CalendarDays,
+  ExternalLink,
 } from 'lucide-react'
+import { formatPhoneDisplay } from '@/components/ui/phone-input'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 import { getBilling, getAdminBranding } from '@/api/admin'
 import { logout } from '@/api/auth'
 import { applyTenantTheme } from '@/lib/applyTenantTheme'
-import { differenceInDays, parseISO } from 'date-fns'
+import { differenceInDays } from 'date-fns'
 
 const navItems = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -34,27 +39,30 @@ const navItems = [
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const { logout: storeLogout, user } = useAuthStore()
 
-  const { data: billing } = useQuery({
+  const { data: billing, isLoading: billingLoading } = useQuery({
     queryKey: ['billing'],
     queryFn: getBilling,
     refetchInterval: 1000 * 60 * 5,
   })
 
-  const { data: branding } = useQuery({
+  const { data: branding, isLoading: brandingLoading } = useQuery({
     queryKey: ['admin-branding'],
     queryFn: getAdminBranding,
     retry: false,
   })
 
-  useEffect(() => {
-    if (branding) applyTenantTheme(branding.primaryColor, branding.secondaryColor)
-  }, [branding])
+  useLayoutEffect(() => {
+    if (!brandingLoading && branding) {
+      applyTenantTheme(branding.primaryColor, branding.secondaryColor)
+    }
+  }, [branding, brandingLoading])
 
   const trialDaysLeft =
     billing && !billing.subscriptionActive && billing.trialEndsAt
-      ? differenceInDays(parseISO(billing.trialEndsAt), new Date())
+      ? differenceInDays(new Date(billing.trialEndsAt), new Date())
       : null
 
   const isTrialExpired = trialDaysLeft !== null && trialDaysLeft < 0
@@ -85,7 +93,7 @@ export default function AdminLayout() {
             <ScissorsIcon className="w-4 h-4 text-white" />
           </div>
         )}
-        <span className="font-bold text-lg tracking-tight">BarberApp</span>
+        <span className="font-bold text-lg tracking-tight">{branding?.name || 'Navalha.io'}</span>
       </div>
 
       {/* Nav */}
@@ -112,6 +120,42 @@ export default function AdminLayout() {
           ))}
       </nav>
 
+      {/* Shop Info */}
+      {(branding?.contactPhone || branding?.instagramUrl || branding?.mapsUrl || branding?.openingHours || branding?.operationDays) && (
+        <div className="px-3 py-3 border-t border-white/10 space-y-2">
+          {branding?.contactPhone && (
+            <a href={`tel:${branding.contactPhone}`} className="flex items-center gap-2 text-xs text-white/70 hover:text-white">
+              <Phone className="w-3.5 h-3.5" />
+              {formatPhoneDisplay(branding.contactPhone)}
+            </a>
+          )}
+          {branding?.instagramUrl && (
+            <a href={branding.instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-white/70 hover:text-white">
+              <ExternalLink className="w-3.5 h-3.5" />
+              @{branding.instagramUrl.replace(/.*instagram\.com\//, '').replace(/\/$/, '')}
+            </a>
+          )}
+          {branding?.mapsUrl && (
+            <a href={branding.mapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-white/70 hover:text-white">
+              <MapPin className="w-3.5 h-3.5" />
+              Ver no mapa
+            </a>
+          )}
+          {branding?.openingHours && (
+            <div className="flex items-center gap-2 text-xs text-white/70">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{branding.openingHours}</span>
+            </div>
+          )}
+          {branding?.operationDays && (
+            <div className="flex items-center gap-2 text-xs text-white/70">
+              <CalendarDays className="w-3.5 h-3.5" />
+              <span>{branding.operationDays}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* User + Logout */}
       <div className="px-3 py-4 border-t border-white/10 space-y-1">
         <div className="px-3 py-2">
@@ -130,23 +174,29 @@ export default function AdminLayout() {
     </div>
   )
 
+  const sidebarPlaceholder = (
+    <div className="flex flex-col h-full bg-gray-100 w-64 items-center justify-center">
+      <ScissorsIcon className="w-6 h-6 text-gray-300 animate-pulse" />
+    </div>
+  )
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col shrink-0">
-        {sidebar}
+        {brandingLoading ? sidebarPlaceholder : sidebar}
       </aside>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setSidebarOpen(false)}
-          />
-          <aside className="relative z-50 flex flex-col h-full">
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <aside className="relative flex flex-col h-full shadow-2xl">
             {sidebar}
           </aside>
+          <div
+            className="flex-1 bg-black/60"
+            onClick={() => setSidebarOpen(false)}
+          />
         </div>
       )}
 
@@ -165,7 +215,7 @@ export default function AdminLayout() {
         )}
 
         {/* Expired overlay */}
-        {isTrialExpired && !billing?.subscriptionActive && (
+        {!billingLoading && isTrialExpired && !billing?.subscriptionActive && location.pathname !== '/admin/billing' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
             <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
@@ -176,7 +226,7 @@ export default function AdminLayout() {
                 Seu período de trial terminou. Assine agora para continuar usando o sistema.
               </p>
               <button
-                onClick={() => navigate('/admin/billing')}
+                onClick={() => window.location.href = '/admin/billing'}
                 className="w-full bg-tenant-secondary text-white py-3 rounded-lg font-semibold hover:opacity-80 transition-opacity"
               >
                 Ver planos
@@ -186,19 +236,25 @@ export default function AdminLayout() {
         )}
 
         {/* Mobile topbar */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-tenant-primary text-white border-b border-white/10">
-          <button onClick={() => setSidebarOpen(true)}>
+        <div className={`md:hidden flex items-center gap-3 px-3 py-2.5 border ${brandingLoading ? 'bg-gray-100 text-gray-300 border-gray-200' : 'bg-tenant-primary text-white border-white/10'}`}>
+          <button
+            onClick={() => setSidebarOpen((o) => !o)}
+            aria-label="Abrir menu"
+            disabled={brandingLoading}
+          >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="font-bold">BarberApp</span>
-          <button className="ml-auto" onClick={() => setSidebarOpen(false)}>
-            {sidebarOpen && <X className="w-5 h-5" />}
-          </button>
+          {brandingLoading
+            ? <ScissorsIcon className="w-4 h-4 animate-pulse" />
+            : <span className="font-bold text-sm">{branding?.name || 'Navalha.io'}</span>
+          }
         </div>
 
         {/* Page content */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
-          <Outlet />
+        <main className="flex-1 p-3 md:p-4 lg:p-4 xl:p-6 overflow-x-hidden overflow-y-auto">
+          <div className="max-w-6xl mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

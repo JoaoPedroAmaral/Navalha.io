@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Settings } from 'lucide-react'
 import { getBarbers, getSchedule, saveSchedule } from '@/api/admin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,10 +46,13 @@ export default function SchedulePage() {
     queryFn: getBarbers,
   })
 
+  // Derive effective barber ID: use selected or fall back to first barber
+  const effectiveBarberId = selectedBarberId || (barbers.length > 0 ? barbers[0].id : '')
+
   const { data: fetchedSchedule, isLoading } = useQuery({
-    queryKey: ['schedule', selectedBarberId],
-    queryFn: () => getSchedule(selectedBarberId),
-    enabled: !!selectedBarberId,
+    queryKey: ['schedule', effectiveBarberId],
+    queryFn: () => getSchedule(effectiveBarberId),
+    enabled: !!effectiveBarberId,
   })
 
   // Derived: base schedule from server or defaults, then apply local edits
@@ -56,14 +60,14 @@ export default function SchedulePage() {
     const base =
       fetchedSchedule && fetchedSchedule.length > 0
         ? fetchedSchedule
-        : selectedBarberId
-        ? defaultSchedule(selectedBarberId)
+        : effectiveBarberId
+        ? defaultSchedule(effectiveBarberId)
         : []
     return base.map((row) => ({
       ...row,
       ...(localEdits[row.dayOfWeek] ?? {}),
     }))
-  }, [fetchedSchedule, selectedBarberId, localEdits])
+  }, [fetchedSchedule, effectiveBarberId, localEdits])
 
   function handleBarberChange(barberId: string) {
     setSelectedBarberId(barberId)
@@ -71,9 +75,9 @@ export default function SchedulePage() {
   }
 
   const saveMutation = useMutation({
-    mutationFn: () => saveSchedule(selectedBarberId, schedule),
+    mutationFn: () => saveSchedule(effectiveBarberId, schedule),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['schedule', selectedBarberId] })
+      void qc.invalidateQueries({ queryKey: ['schedule', effectiveBarberId] })
       setLocalEdits({})
       toast({ variant: 'success', title: 'Agenda salva com sucesso' })
     },
@@ -93,7 +97,7 @@ export default function SchedulePage() {
 
       <div className="max-w-xs">
         <Select
-          value={selectedBarberId}
+          value={effectiveBarberId}
           onValueChange={handleBarberChange}
         >
           <SelectTrigger>
@@ -109,15 +113,20 @@ export default function SchedulePage() {
         </Select>
       </div>
 
-      {!selectedBarberId ? (
-        <div className="bg-white rounded-xl border p-8 text-center text-gray-400">
-          Selecione um barbeiro para configurar a agenda
+      {!effectiveBarberId ? (
+        <div className="bg-white rounded-xl border p-12 text-center shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <Settings className="w-5 h-5 text-gray-400" />
+          </div>
+          <p className="text-gray-500 font-medium">Selecione um barbeiro para configurar a agenda</p>
         </div>
       ) : isLoading ? (
-        <div className="text-center py-8 text-gray-400">Carregando...</div>
+        <div className="bg-white rounded-xl border p-8 text-center">
+          <div className="animate-spin w-6 h-6 border-2 border-tenant-secondary border-t-transparent rounded-full mx-auto" />
+        </div>
       ) : (
-        <div className="bg-white rounded-xl border">
-          <div className="px-5 py-4 border-b">
+        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b bg-gray-50/80">
             <p className="font-semibold text-gray-900">Horários semanais</p>
             <p className="text-sm text-gray-500">Configure os dias e horários de atendimento</p>
           </div>

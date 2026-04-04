@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Scissors, Save, Palette } from 'lucide-react'
 import { getAdminBranding, updateBranding } from '@/api/admin'
@@ -6,6 +6,8 @@ import { applyTenantTheme } from '@/lib/applyTenantTheme'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PhoneInput } from '@/components/ui/phone-input'
+import { TimeRangeInput } from '@/components/ui/time-range-input'
 import { toast } from '@/hooks/useToast'
 
 const DEFAULT_PRIMARY = '#1a1f2e'
@@ -20,19 +22,36 @@ export default function BrandingPage() {
     retry: false,
   })
 
-  const [primaryColor, setPrimaryColor] = useState('')
-  const [secondaryColor, setSecondaryColor] = useState('')
-  const [logoUrl, setLogoUrl] = useState('')
-  const initialized = useRef(false)
+  const [name, setName] = useState(() => current?.name ?? '')
+  const [primaryColor, setPrimaryColor] = useState(
+    () => current?.primaryColor ?? DEFAULT_PRIMARY
+  )
+  const [secondaryColor, setSecondaryColor] = useState(
+    () => current?.secondaryColor ?? DEFAULT_SECONDARY
+  )
+  const [logoUrl, setLogoUrl] = useState(() => current?.logoUrl ?? '')
+  const [contactPhone, setContactPhone] = useState(() => current?.contactPhone ?? '')
+  const [instagramUrl, setInstagramUrl] = useState(() => current?.instagramUrl ?? '')
+  const [mapsUrl, setMapsUrl] = useState(() => current?.mapsUrl ?? '')
+  const [openingHours, setOpeningHours] = useState(() => current?.openingHours ?? '')
+  const [operationDays, setOperationDays] = useState(() => current?.operationDays ?? '')
+  const [hydrated, setHydrated] = useState(false)
 
-  // Initialize form once data arrives
+  // Hydrate form once server data arrives (runs only on first load)
   useEffect(() => {
-    if (current && !initialized.current) {
-      initialized.current = true
+    if (current && !hydrated) {
+      setHydrated(true)
+      setName(current.name ?? '')
       setPrimaryColor(current.primaryColor ?? DEFAULT_PRIMARY)
       setSecondaryColor(current.secondaryColor ?? DEFAULT_SECONDARY)
       setLogoUrl(current.logoUrl ?? '')
+      setContactPhone(current.contactPhone ?? '')
+      setInstagramUrl(current.instagramUrl ?? '')
+      setMapsUrl(current.mapsUrl ?? '')
+      setOpeningHours(current.openingHours ?? '')
+      setOperationDays(current.operationDays ?? '')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current])
 
   // Apply colors to the actual admin panel in real-time
@@ -48,15 +67,27 @@ export default function BrandingPage() {
   const { mutate: save, isPending } = useMutation({
     mutationFn: () =>
       updateBranding({
+        name: name || undefined,
         primaryColor: primaryColor || DEFAULT_PRIMARY,
         secondaryColor: secondaryColor || DEFAULT_SECONDARY,
         logoUrl: logoUrl || undefined,
+        contactPhone: contactPhone || undefined,
+        instagramUrl: instagramUrl || undefined,
+        mapsUrl: mapsUrl || undefined,
+        openingHours: openingHours || undefined,
+        operationDays: operationDays || undefined,
       }),
     onSuccess: () => {
       queryClient.setQueryData(['admin-branding'], {
+        name: name || undefined,
         primaryColor: primaryColor || DEFAULT_PRIMARY,
         secondaryColor: secondaryColor || DEFAULT_SECONDARY,
         logoUrl: logoUrl || undefined,
+        contactPhone: contactPhone || null,
+        instagramUrl: instagramUrl || null,
+        mapsUrl: mapsUrl || null,
+        openingHours: openingHours || null,
+        operationDays: operationDays || null,
       })
       toast({ title: 'Branding salvo com sucesso!' })
     },
@@ -92,6 +123,16 @@ export default function BrandingPage() {
           <div className="flex items-center gap-2 text-gray-900 font-semibold">
             <Palette className="w-4 h-4" />
             Configurações
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Nome da barbearia</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nome da sua barbearia"
+            />
+            <p className="text-xs text-gray-400">Nome exibido na barra lateral e no agendamento.</p>
           </div>
 
           <div className="space-y-1.5">
@@ -144,6 +185,53 @@ export default function BrandingPage() {
             </p>
           </div>
 
+          <div className="space-y-1.5">
+            <Label>Telefone de contato</Label>
+            <PhoneInput
+              value={contactPhone}
+              onChange={(e) => setContactPhone(e.target.value)}
+              placeholder="(11) 99999-9999"
+            />
+            <p className="text-xs text-gray-400">Exibido na página de agendamento dos clientes.</p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Instagram</Label>
+            <Input
+              value={instagramUrl}
+              onChange={(e) => setInstagramUrl(e.target.value)}
+              placeholder="https://instagram.com/suabarbearia"
+            />
+            <p className="text-xs text-gray-400">URL completa ou @handle da conta.</p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Link do Google Maps</Label>
+            <Input
+              value={mapsUrl}
+              onChange={(e) => setMapsUrl(e.target.value)}
+              placeholder="https://maps.google.com/..."
+            />
+            <p className="text-xs text-gray-400">Link de localização exibido como "Ver no mapa".</p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Horário de funcionamento</Label>
+            <TimeRangeInput
+              value={openingHours}
+              onChange={(v) => setOpeningHours(v)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Dias de funcionamento</Label>
+            <Input
+              value={operationDays}
+              onChange={(e) => setOperationDays(e.target.value)}
+              placeholder="Segunda a Sábado"
+            />
+          </div>
+
           <Button variant="gold" className="w-full" loading={isPending} onClick={() => save()}>
             <Save className="w-4 h-4" />
             Salvar branding
@@ -178,7 +266,7 @@ export default function BrandingPage() {
                 </div>
               )}
               <div>
-                <p className="font-bold text-sm leading-tight">Minha Barbearia</p>
+                <p className="font-bold text-sm leading-tight">{name || 'Navalha.io'}</p>
                 <p className="text-xs opacity-60">Agendamento online</p>
               </div>
             </div>

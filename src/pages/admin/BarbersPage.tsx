@@ -137,17 +137,32 @@ export default function BarbersPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-10 text-gray-400">Carregando...</div>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-xl border p-5 flex items-center gap-4 animate-pulse">
+              <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="w-32 h-4 bg-gray-200 rounded" />
+                <div className="w-24 h-3 bg-gray-100 rounded" />
+              </div>
+              <div className="w-16 h-6 bg-gray-200 rounded-full" />
+            </div>
+          ))}
+        </div>
       ) : barbers.length === 0 ? (
-        <div className="text-center py-10 text-gray-400 bg-white rounded-xl border">
-          Nenhum barbeiro cadastrado
+        <div className="bg-white rounded-xl border p-12 text-center shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <Plus className="w-6 h-6 text-gray-400" />
+          </div>
+          <p className="text-gray-500 font-medium">Nenhum barbeiro cadastrado</p>
+          <p className="text-gray-400 text-sm mt-1">Adicione seu primeiro barbeiro</p>
         </div>
       ) : (
         <div className="space-y-3">
           {barbers.map((barber) => (
-            <div key={barber.id} className="bg-white rounded-xl border">
+            <div key={barber.id} className="bg-white rounded-xl border shadow-sm">
               <div className="flex items-center gap-4 p-5">
-                <div className="w-10 h-10 rounded-full bg-sidebar flex items-center justify-center text-white font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-full bg-sidebar flex items-center justify-center text-gold font-bold text-sm shrink-0">
                   {barber.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -155,9 +170,9 @@ export default function BarbersPage() {
                   <p className="text-sm text-gray-500">{formatPhone(barber.phone)}</p>
                 </div>
                 <span
-                  className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                     barber.active
-                      ? 'bg-green-100 text-green-700'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       : 'bg-gray-100 text-gray-500'
                   }`}
                 >
