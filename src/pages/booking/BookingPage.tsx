@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPublicBarbershop, getPublicProducts } from "@/api/public";
 import { applyTenantTheme, resetTenantTheme } from "@/lib/applyTenantTheme";
 import {
@@ -38,6 +38,7 @@ const STEPS = [
 
 export default function BookingPage() {
   const { slug } = useParams<{ slug: string }>();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState(0);
   const [booking, setBooking] = useState<BookingState>({
     service: null,
@@ -306,6 +307,7 @@ export default function BookingPage() {
               scheduledAt={booking.scheduledAt}
               shopName={shop?.name ?? "Barbearia"}
               onNewBooking={() => {
+                queryClient.invalidateQueries({ queryKey: ['public-slots'] });
                 setStep(0);
                 setBooking({
                   service: null,

@@ -38,7 +38,9 @@ export default function StepSelectDateTime({ slug, service, barber, onSelect, on
     queryFn: () => getPublicSlots(slug, barber.id, service.id, dateStr),
   })
 
-  const availableSlots = slots.filter((s) => s.available)
+  function formatTime(time: string): string {
+    return time.slice(0, 5)
+  }
 
   return (
     <div className="space-y-5">
@@ -119,22 +121,27 @@ export default function StepSelectDateTime({ slug, service, barber, onSelect, on
               <div key={i} className="h-10 bg-gray-200 rounded-lg animate-pulse" />
             ))}
           </div>
-        ) : availableSlots.length === 0 ? (
+        ) : slots.length === 0 ? (
           <div className="text-center py-6 text-gray-400">
             Nenhum horário disponível neste dia
           </div>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-            {availableSlots.map((slot) => {
-              const timeNormalized = slot.time.split(':').length === 2 ? `${slot.time}:00` : slot.time
+            {slots.map((slot) => {
+              const timeNormalized = slot.time.length === 5 ? `${slot.time}:00` : slot.time
               const scheduledAt = `${dateStr}T${timeNormalized}`
               return (
                 <button
                   key={slot.time}
-                  onClick={() => onSelect(scheduledAt)}
-                  className="py-2.5 px-1 rounded-lg border-2 border-transparent bg-gray-50 hover:border-tenant-secondary hover:bg-gray-100 text-sm font-medium text-gray-700 transition-all text-center min-h-[44px]"
+                  onClick={() => slot.available && onSelect(scheduledAt)}
+                  disabled={!slot.available}
+                  className={`py-2.5 px-1 rounded-lg border-2 text-sm font-medium transition-all text-center min-h-[44px] ${
+                    slot.available
+                      ? 'border-transparent bg-gray-50 hover:border-tenant-secondary hover:bg-gray-100 text-gray-700 cursor-pointer'
+                      : 'border-transparent bg-gray-100 text-gray-300 cursor-not-allowed line-through'
+                  }`}
                 >
-                  {slot.time}
+                  {formatTime(slot.time)}
                 </button>
               )
             })}
