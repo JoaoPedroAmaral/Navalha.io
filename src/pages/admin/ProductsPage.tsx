@@ -42,9 +42,9 @@ export default function ProductsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ['products'],
-    queryFn: getProducts,
+    queryFn: ({ signal }) => getProducts(signal),
   })
 
   const {

@@ -42,9 +42,9 @@ export default function ServicesPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editService, setEditService] = useState<Service | null>(null)
 
-  const { data: services = [], isLoading } = useQuery({
+  const { data: services = [], isLoading } = useQuery<Service[]>({
     queryKey: ['services'],
-    queryFn: getServices,
+    queryFn: ({ signal }) => getServices(signal),
   })
 
   const {

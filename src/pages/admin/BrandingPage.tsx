@@ -18,7 +18,7 @@ export default function BrandingPage() {
 
   const { data: current, isLoading } = useQuery({
     queryKey: ["admin-branding"],
-    queryFn: getAdminBranding,
+    queryFn: ({ signal }) => getAdminBranding(signal),
     retry: false,
   });
 

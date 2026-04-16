@@ -25,7 +25,7 @@ export default function BillingPage() {
 
   const { data: billing, isLoading } = useQuery({
     queryKey: ['billing'],
-    queryFn: getBilling,
+    queryFn: ({ signal }) => getBilling(signal),
   })
 
   const checkoutMutation = useMutation({
