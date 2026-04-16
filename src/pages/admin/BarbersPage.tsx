@@ -55,11 +55,13 @@ export default function BarbersPage() {
 
   const { data: barbers = [], isLoading } = useQuery({
     queryKey: ["barbers"],
-    queryFn: getBarbers,
+    queryFn: ({ signal }) => getBarbers(signal),
+    staleTime: 1000 * 60 * 5,
   });
   const { data: allServices = [] } = useQuery({
     queryKey: ["services"],
-    queryFn: getServices,
+    queryFn: ({ signal }) => getServices(signal),
+    staleTime: 1000 * 60 * 5,
   });
 
   const {

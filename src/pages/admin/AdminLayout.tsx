@@ -10,7 +10,6 @@ import {
   CreditCard,
   LogOut,
   Menu,
-  Package,
   Scissors as ScissorsIcon,
   Palette,
   MapPin,
@@ -18,6 +17,7 @@ import {
   Clock,
   CalendarDays,
   ExternalLink,
+  Package,
 } from 'lucide-react'
 import { formatPhoneDisplay } from '@/components/ui/phone-input'
 import { cn } from '@/lib/utils'
@@ -46,13 +46,14 @@ export default function AdminLayout() {
 
   const { data: billing, isLoading: billingLoading } = useQuery({
     queryKey: ['billing'],
-    queryFn: getBilling,
+    queryFn: ({ signal }) => getBilling(signal),
     refetchInterval: 1000 * 60 * 5,
   })
 
   const { data: branding, isLoading: brandingLoading } = useQuery({
     queryKey: ['admin-branding'],
-    queryFn: getAdminBranding,
+    queryFn: ({ signal }) => getAdminBranding(signal),
+    staleTime: 1000 * 60 * 10,
     retry: false,
   })
 
@@ -61,6 +62,19 @@ export default function AdminLayout() {
       applyTenantTheme(branding.primaryColor, branding.secondaryColor)
     }
   }, [branding, brandingLoading])
+
+  if (brandingLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-950">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+            <ScissorsIcon className="w-7 h-7 text-white/30 animate-pulse" />
+          </div>
+          <p className="text-sm text-white/30 tracking-widest uppercase">Carregando</p>
+        </div>
+      </div>
+    )
+  }
 
   const trialDaysLeft =
     billing && !billing.subscriptionActive && billing.trialEndsAt
@@ -81,25 +95,32 @@ export default function AdminLayout() {
   }
 
   const sidebar = (
-    <div className="flex flex-col h-full bg-tenant-primary text-white w-64">
+    <div className="flex flex-col h-full w-64 sidebar-gradient text-[var(--tenant-text-on-primary)]">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-[rgb(var(--tenant-text-on-primary-rgb)/0.08)]">
         {branding?.logoUrl ? (
           <img
             src={branding.logoUrl}
             alt="Logo"
-            className="w-8 h-8 rounded-lg object-cover shrink-0"
+            className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md"
           />
         ) : (
-          <div className="w-8 h-8 rounded-lg bg-tenant-secondary flex items-center justify-center">
-            <ScissorsIcon className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-tenant-secondary flex items-center justify-center shrink-0 shadow-md shadow-tenant-glow">
+            <ScissorsIcon className="w-4 h-4 text-[var(--tenant-text-on-primary)]" />
           </div>
         )}
-        <span className="font-bold text-lg tracking-tight">{branding?.name || 'Navalha.io'}</span>
+        <div className="min-w-0">
+          <span className="font-bold text-base tracking-tight leading-none block truncate">
+            {branding?.name || 'Navalha.io'}
+          </span>
+          <span className="text-[10px] text-[rgb(var(--tenant-text-on-primary-rgb)/0.40)] font-medium tracking-wider uppercase mt-0.5 block">
+            Painel admin
+          </span>
+        </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-4 px-3 space-y-1">
+      <nav className="flex-1 py-3 px-2.5 space-y-0.5 overflow-y-auto">
         {navItems
           .filter((item) => !('ownerOnly' in item && item.ownerOnly) || user?.role === 'OWNER')
           .map(({ to, label, icon: Icon }) => (
@@ -109,14 +130,14 @@ export default function AdminLayout() {
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
                   isActive
-                    ? 'bg-tenant-secondary text-white'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    ? 'nav-item-active'
+                    : 'text-[rgb(var(--tenant-text-on-primary-rgb)/0.65)] hover:bg-[rgb(var(--tenant-text-on-primary-rgb)/0.08)] hover:text-[var(--tenant-text-on-primary)]'
                 )
               }
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <Icon className="w-4 h-4 shrink-0 opacity-90" />
               {label}
             </NavLink>
           ))}
@@ -124,34 +145,34 @@ export default function AdminLayout() {
 
       {/* Shop Info */}
       {(branding?.contactPhone || branding?.instagramUrl || branding?.mapsUrl || branding?.openingHours || branding?.operationDays) && (
-        <div className="px-3 py-3 border-t border-white/10 space-y-2">
+        <div className="px-2.5 py-3 border-t border-[rgb(var(--tenant-text-on-primary-rgb)/0.08)] space-y-1">
           {branding?.contactPhone && (
-            <a href={`tel:${branding.contactPhone}`} className="flex items-center gap-2 text-xs text-white/70 hover:text-white">
-              <Phone className="w-3.5 h-3.5" />
+            <a href={`tel:${branding.contactPhone}`} className="flex items-center gap-2 px-3 py-1.5 text-xs text-[rgb(var(--tenant-text-on-primary-rgb)/0.55)] hover:text-[rgb(var(--tenant-text-on-primary-rgb)/0.90)] transition-colors rounded-md hover:bg-[rgb(var(--tenant-text-on-primary-rgb)/0.05)]">
+              <Phone className="w-3 h-3 shrink-0" />
               {formatPhoneDisplay(branding.contactPhone)}
             </a>
           )}
           {branding?.instagramUrl && (
-            <a href={branding.instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-white/70 hover:text-white">
-              <ExternalLink className="w-3.5 h-3.5" />
+            <a href={branding.instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 text-xs text-[rgb(var(--tenant-text-on-primary-rgb)/0.55)] hover:text-[rgb(var(--tenant-text-on-primary-rgb)/0.90)] transition-colors rounded-md hover:bg-[rgb(var(--tenant-text-on-primary-rgb)/0.05)]">
+              <ExternalLink className="w-3 h-3 shrink-0" />
               @{branding.instagramUrl.replace(/.*instagram\.com\//, '').replace(/\/$/, '')}
             </a>
           )}
           {branding?.mapsUrl && (
-            <a href={branding.mapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-white/70 hover:text-white">
-              <MapPin className="w-3.5 h-3.5" />
+            <a href={branding.mapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 text-xs text-[rgb(var(--tenant-text-on-primary-rgb)/0.55)] hover:text-[rgb(var(--tenant-text-on-primary-rgb)/0.90)] transition-colors rounded-md hover:bg-[rgb(var(--tenant-text-on-primary-rgb)/0.05)]">
+              <MapPin className="w-3 h-3 shrink-0" />
               Ver no mapa
             </a>
           )}
           {branding?.openingHours && (
-            <div className="flex items-center gap-2 text-xs text-white/70">
-              <Clock className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-[rgb(var(--tenant-text-on-primary-rgb)/0.55)]">
+              <Clock className="w-3 h-3 shrink-0" />
               <span>{branding.openingHours}</span>
             </div>
           )}
           {branding?.operationDays && (
-            <div className="flex items-center gap-2 text-xs text-white/70">
-              <CalendarDays className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-[rgb(var(--tenant-text-on-primary-rgb)/0.55)]">
+              <CalendarDays className="w-3 h-3 shrink-0" />
               <span>{branding.operationDays}</span>
             </div>
           )}
@@ -159,15 +180,15 @@ export default function AdminLayout() {
       )}
 
       {/* User + Logout */}
-      <div className="px-3 py-4 border-t border-white/10 space-y-1">
-        <div className="px-3 py-2">
-          <p className="text-xs text-white/50 uppercase tracking-wide">Conta</p>
-          <p className="text-sm text-white/80 truncate">{user?.sub}</p>
-          <p className="text-xs text-white/40 capitalize">{user?.role?.toLowerCase()}</p>
+      <div className="px-2.5 py-3 border-t border-[rgb(var(--tenant-text-on-primary-rgb)/0.08)]">
+        <div className="px-3 py-2 mb-0.5">
+          <p className="text-[10px] text-[rgb(var(--tenant-text-on-primary-rgb)/0.35)] uppercase tracking-widest font-semibold">Conta</p>
+          <p className="text-sm text-[rgb(var(--tenant-text-on-primary-rgb)/0.75)] truncate mt-0.5 font-medium">{user?.sub}</p>
+          <p className="text-xs text-[rgb(var(--tenant-text-on-primary-rgb)/0.35)] capitalize mt-0.5">{user?.role?.toLowerCase()}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[rgb(var(--tenant-text-on-primary-rgb)/0.55)] hover:bg-[rgb(var(--tenant-text-on-primary-rgb)/0.08)] hover:text-[var(--tenant-text-on-primary)] transition-all duration-150 w-full"
         >
           <LogOut className="w-4 h-4" />
           Sair
@@ -177,15 +198,15 @@ export default function AdminLayout() {
   )
 
   const sidebarPlaceholder = (
-    <div className="flex flex-col h-full bg-gray-100 w-64 items-center justify-center">
+    <div className="flex flex-col h-full w-64 bg-gray-100 items-center justify-center">
       <ScissorsIcon className="w-6 h-6 text-gray-300 animate-pulse" />
     </div>
   )
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-tenant-surface">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col shrink-0">
+      <aside className="hidden md:flex flex-col shrink-0 shadow-tenant-sm">
         {brandingLoading ? sidebarPlaceholder : sidebar}
       </aside>
 
@@ -196,7 +217,7 @@ export default function AdminLayout() {
             {sidebar}
           </aside>
           <div
-            className="flex-1 bg-black/60"
+            className="flex-1 bg-black/60 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
         </div>
@@ -206,11 +227,11 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-auto">
         {/* Trial banner */}
         {trialDaysLeft !== null && !isTrialExpired && trialDaysLeft >= 0 && (
-          <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800 text-center">
+          <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 text-sm text-amber-800 text-center">
             {trialDaysLeft === 0
               ? 'Seu trial termina hoje!'
-              : `${trialDaysLeft} dias restantes no trial. `}
-            <a href="/admin/billing" className="font-semibold underline ml-1">
+              : `${trialDaysLeft} dias restantes no trial.`}
+            <a href="/admin/billing" className="font-semibold underline ml-1 hover:text-amber-900">
               Assinar agora
             </a>
           </div>
@@ -219,17 +240,17 @@ export default function AdminLayout() {
         {/* Expired overlay */}
         {!billingLoading && isTrialExpired && !billing?.subscriptionActive && location.pathname !== '/admin/billing' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                <CreditCard className="w-8 h-8 text-red-600" />
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-5">
+                <CreditCard className="w-8 h-8 text-red-500" />
               </div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Trial expirado</h2>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-500 text-sm mb-6 leading-relaxed">
                 Seu período de trial terminou. Assine agora para continuar usando o sistema.
               </p>
               <button
                 onClick={() => window.location.href = '/admin/billing'}
-                className="w-full bg-tenant-secondary text-white py-3 rounded-lg font-semibold hover:opacity-80 transition-opacity"
+                className="w-full bg-tenant-secondary text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity text-sm"
               >
                 Ver planos
               </button>
@@ -238,22 +259,30 @@ export default function AdminLayout() {
         )}
 
         {/* Mobile topbar */}
-        <div className={`md:hidden flex items-center gap-3 px-3 py-2.5 border ${brandingLoading ? 'bg-gray-100 text-gray-300 border-gray-200' : 'bg-tenant-primary text-white border-white/10'}`}>
+        <div className={cn(
+          'md:hidden flex items-center gap-3 px-4 py-3 border-b',
+          brandingLoading
+            ? 'bg-gray-100 text-gray-300 border-gray-200'
+            : 'bg-tenant-primary border-[rgb(var(--tenant-text-on-primary-rgb)/0.10)]'
+        )}
+          style={brandingLoading ? undefined : { color: 'var(--tenant-text-on-primary)' }}
+        >
           <button
             onClick={() => setSidebarOpen((o) => !o)}
             aria-label="Abrir menu"
             disabled={brandingLoading}
+            className="p-1 rounded-md hover:bg-[rgb(var(--tenant-text-on-primary-rgb)/0.10)] transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
           {brandingLoading
             ? <ScissorsIcon className="w-4 h-4 animate-pulse" />
-            : <span className="font-bold text-sm">{branding?.name || 'Navalha.io'}</span>
+            : <span className="font-semibold text-sm tracking-tight">{branding?.name || 'Navalha.io'}</span>
           }
         </div>
 
         {/* Page content */}
-        <main className="flex-1 p-3 md:p-4 lg:p-4 xl:p-6 overflow-x-hidden overflow-y-auto">
+        <main className="flex-1 p-3 md:p-5 lg:p-6 overflow-x-hidden overflow-y-auto" style={{ background: 'var(--tenant-content-bg)' }}>
           <div className="max-w-6xl mx-auto">
             <Outlet />
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,7 +33,150 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/useToast";
+import { DatePicker } from "@/components/ui/date-picker";
 import type { AppointmentStatus } from "@/types";
+
+// ─── Time/date select helpers ────────────────────────────────────────────────
+
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTES = ["00", "15", "30", "45"];
+const MONTHS = [
+  { value: "01", label: "Jan" },
+  { value: "02", label: "Fev" },
+  { value: "03", label: "Mar" },
+  { value: "04", label: "Abr" },
+  { value: "05", label: "Mai" },
+  { value: "06", label: "Jun" },
+  { value: "07", label: "Jul" },
+  { value: "08", label: "Ago" },
+  { value: "09", label: "Set" },
+  { value: "10", label: "Out" },
+  { value: "11", label: "Nov" },
+  { value: "12", label: "Dez" },
+];
+
+function buildYears() {
+  const current = new Date().getFullYear();
+  return [current - 1, current, current + 1].map(String);
+}
+
+function parseDateParts(date: string): [string, string, string] {
+  const [y = "", m = "", d = ""] = date.split("-");
+  return [y, m, d];
+}
+
+function buildDate(year: string, month: string, day: string) {
+  if (!year || !month || !day) return "";
+  return `${year}-${month}-${day}`;
+}
+
+interface DateSelectProps {
+  value: string;
+  onChange: (date: string) => void;
+  placeholder?: boolean;
+}
+
+function DateSelect({ value, onChange, placeholder }: DateSelectProps) {
+  const [year, month, day] = parseDateParts(value);
+  const currentYear = new Date().getFullYear();
+  const years = useMemo(() => buildYears(), []);
+
+  const daysInMonth = useMemo(() => {
+    if (!year || !month) return 31;
+    return new Date(Number(year), Number(month), 0).getDate();
+  }, [year, month]);
+
+  const days = Array.from({ length: daysInMonth }, (_, i) =>
+    String(i + 1).padStart(2, "0"),
+  );
+
+  const setDay = (d: string) => onChange(buildDate(year || String(currentYear), month || "01", d));
+  const setMonth = (m: string) => onChange(buildDate(year || String(currentYear), m, day || "01"));
+  const setYear = (y: string) => onChange(buildDate(y, month || "01", day || "01"));
+
+  return (
+    <div className="flex items-center gap-1">
+      <Select value={day} onValueChange={setDay}>
+        <SelectTrigger className="w-[68px]">
+          <SelectValue placeholder={placeholder ? "Dia" : undefined} />
+        </SelectTrigger>
+        <SelectContent>
+          {days.map((d) => (
+            <SelectItem key={d} value={d}>
+              {d}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={month} onValueChange={setMonth}>
+        <SelectTrigger className="w-[72px]">
+          <SelectValue placeholder={placeholder ? "Mês" : undefined} />
+        </SelectTrigger>
+        <SelectContent>
+          {MONTHS.map((m) => (
+            <SelectItem key={m.value} value={m.value}>
+              {m.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={year} onValueChange={setYear}>
+        <SelectTrigger className="w-[80px]">
+          <SelectValue placeholder={placeholder ? "Ano" : undefined} />
+        </SelectTrigger>
+        <SelectContent>
+          {years.map((y) => (
+            <SelectItem key={y} value={y}>
+              {y}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+interface TimeSelectProps {
+  value: string;
+  onChange: (time: string) => void;
+}
+
+function TimeSelect({ value, onChange }: TimeSelectProps) {
+  const parts = value.split(":");
+  const hour = parts[0] || "";
+  const minute = parts[1] || "";
+  return (
+    <div className="flex items-center gap-1">
+      <Select value={hour} onValueChange={(h) => onChange(`${h}:${minute}`)}>
+        <SelectTrigger className="w-[72px]">
+          <SelectValue placeholder="Hora" />
+        </SelectTrigger>
+        <SelectContent>
+          {HOURS.map((h) => (
+            <SelectItem key={h} value={h}>
+              {h}h
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <span className="text-gray-400 text-xs font-semibold">:</span>
+      <Select value={minute} onValueChange={(m) => onChange(`${hour}:${m}`)}>
+        <SelectTrigger className="w-[68px]">
+          <SelectValue placeholder="Min" />
+        </SelectTrigger>
+        <SelectContent>
+          {MINUTES.map((m) => (
+            <SelectItem key={m} value={m}>
+              {m}min
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const apptSchema = z.object({
   barberId: z.string().min(1, "Selecione um Funcionario"),
@@ -62,20 +205,23 @@ export default function AppointmentsPage() {
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ["appointments", dateFilter, statusFilter],
-    queryFn: () =>
-      getAppointments({
-        date: dateFilter || undefined,
-        status: (statusFilter as AppointmentStatus) || undefined,
-      }),
+    queryFn: ({ signal }) =>
+      getAppointments(
+        { date: dateFilter || undefined, status: (statusFilter as AppointmentStatus) || undefined },
+        signal,
+      ),
+    placeholderData: (prev) => prev,
   });
 
   const { data: barbers = [] } = useQuery({
     queryKey: ["barbers"],
-    queryFn: getBarbers,
+    queryFn: ({ signal }) => getBarbers(signal),
+    staleTime: 1000 * 60 * 5,
   });
   const { data: services = [] } = useQuery({
     queryKey: ["services"],
-    queryFn: getServices,
+    queryFn: ({ signal }) => getServices(signal),
+    staleTime: 1000 * 60 * 5,
   });
 
   const statusMutation = useMutation({
@@ -136,26 +282,29 @@ export default function AppointmentsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <Input
-          type="date"
+      <div className="flex flex-wrap items-center gap-3">
+        <DatePicker
           value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-          className="w-auto"
+          onChange={setDateFilter}
+          placeholder="Filtrar por data"
         />
-        <select
-          value={statusFilter}
-          onChange={(e) =>
-            setStatusFilter(e.target.value as AppointmentStatus | "")
+        <Select
+          value={statusFilter === "" ? "__all__" : statusFilter}
+          onValueChange={(v) =>
+            setStatusFilter(v === "__all__" ? "" : (v as AppointmentStatus))
           }
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value === "" ? "__all__" : opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {(dateFilter || statusFilter) && (
           <Button
             variant="ghost"
@@ -423,10 +572,20 @@ export default function AppointmentsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label>Data</Label>
-                <Input type="date" {...register("scheduledDate")} />
+                <Controller
+                  control={control}
+                  name="scheduledDate"
+                  render={({ field }) => (
+                    <DateSelect
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      placeholder
+                    />
+                  )}
+                />
                 {errors.scheduledDate && (
                   <p className="text-xs text-destructive">
                     {errors.scheduledDate.message}
@@ -435,7 +594,16 @@ export default function AppointmentsPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Horário</Label>
-                <Input type="time" {...register("scheduledTime")} />
+                <Controller
+                  control={control}
+                  name="scheduledTime"
+                  render={({ field }) => (
+                    <TimeSelect
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
                 {errors.scheduledTime && (
                   <p className="text-xs text-destructive">
                     {errors.scheduledTime.message}

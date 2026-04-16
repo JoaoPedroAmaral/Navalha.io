@@ -42,54 +42,57 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-sidebar to-gray-800 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-[#1a1f2e] to-gray-900 px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center mb-5 shadow-lg shadow-gold/10">
-            <Scissors className="w-8 h-8 text-gold" />
+          <div className="relative mb-5">
+            <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center shadow-xl shadow-gold/10">
+              <Scissors className="w-7 h-7 text-gold" />
+            </div>
+            <div className="absolute inset-0 rounded-2xl bg-gold/5 blur-xl -z-10" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Navalha.io</h1>
-          <p className="text-sm text-white/50 mt-1.5">Sistema de gestão para barbearias</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Navalha.io</h1>
+          <p className="text-sm text-white/40 mt-1.5 tracking-wide">Sistema de gestão empresarial</p>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-7 shadow-2xl">
-          <p className="text-white/70 text-sm font-medium mb-5">Acesse sua conta</p>
+        <div className="bg-white/[0.04] backdrop-blur-sm border border-white/8 rounded-2xl p-7 shadow-2xl">
+          <p className="text-white/60 text-sm font-medium mb-5 tracking-wide">Acesse sua conta</p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-white/80 text-sm">E-mail</Label>
+              <Label htmlFor="email" className="text-white/70 text-xs font-semibold uppercase tracking-wider">E-mail</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="seu@email.com"
                 autoComplete="email"
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:border-gold focus:ring-gold/30"
+                className="bg-white/95 border-white/20 text-gray-900 placeholder:text-gray-400 focus:border-[var(--tenant-secondary)] focus:ring-[var(--tenant-secondary)]/20 h-11"
                 {...register('email')}
               />
               {errors.email && (
-                <p className="text-xs text-red-400">{errors.email.message}</p>
+                <p className="text-xs text-red-400 font-medium">{errors.email.message}</p>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-white/80 text-sm">Senha</Label>
+              <Label htmlFor="password" className="text-white/70 text-xs font-semibold uppercase tracking-wider">Senha</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 autoComplete="current-password"
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:border-gold focus:ring-gold/30"
+                className="bg-white/95 border-white/20 text-gray-900 placeholder:text-gray-400 focus:border-[var(--tenant-secondary)] focus:ring-[var(--tenant-secondary)]/20 h-11"
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-xs text-red-400">{errors.password.message}</p>
+                <p className="text-xs text-red-400 font-medium">{errors.password.message}</p>
               )}
             </div>
 
             <Button
               type="submit"
-              className="w-full mt-2 bg-gold text-white hover:bg-gold/90 font-semibold h-11 text-sm shadow-lg shadow-gold/20"
+              className="w-full mt-2 bg-gold text-white hover:bg-gold/90 font-semibold h-11 text-sm shadow-lg shadow-gold/20 transition-all duration-200"
               loading={isSubmitting}
             >
               Entrar
@@ -97,7 +100,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-white/30 text-xs mt-6">
+        <p className="text-center text-white/25 text-xs mt-7 tracking-wide">
           © {new Date().getFullYear()} Navalha.io. Todos os direitos reservados.
         </p>
       </div>

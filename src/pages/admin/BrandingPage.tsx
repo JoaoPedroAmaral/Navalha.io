@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Scissors, Save, Palette } from "lucide-react";
+import { Scissors, Save, Palette, Sparkles } from "lucide-react";
 import { getAdminBranding, updateBranding } from "@/api/admin";
 import { applyTenantTheme } from "@/lib/applyTenantTheme";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,21 @@ export default function BrandingPage() {
   );
   const [hydrated, setHydrated] = useState(false);
 
-  // Hydrate form once server data arrives (runs only on first load)
+  // Always keep a ref to the latest saved branding so the unmount cleanup
+  // can restore the real theme even if `current` changed after mount.
+  const savedRef = useRef(current)
+  useEffect(() => { savedRef.current = current }, [current])
+
+  // On unmount: revert any unsaved preview colour changes
+  useEffect(() => {
+    return () => {
+      applyTenantTheme(
+        savedRef.current?.primaryColor ?? DEFAULT_PRIMARY,
+        savedRef.current?.secondaryColor ?? DEFAULT_SECONDARY,
+      )
+    }
+  }, [])
+
   useEffect(() => {
     if (current && !hydrated) {
       setHydrated(true);
@@ -62,7 +76,6 @@ export default function BrandingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
 
-  // Apply colors to the actual admin panel in real-time
   useEffect(() => {
     if (primaryColor || secondaryColor) {
       applyTenantTheme(
@@ -107,7 +120,7 @@ export default function BrandingPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="animate-spin w-6 h-6 border-2 border-tenant-secondary border-t-transparent rounded-full" />
+        <div className="animate-spin w-5 h-5 border-2 border-tenant-secondary border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -118,142 +131,144 @@ export default function BrandingPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Aparência</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Aparência</h1>
+        <p className="text-sm text-gray-400 mt-1.5 leading-relaxed">
           Personalize as cores e o logo da sua barbearia. As alterações aparecem
-          ao vivo no painel e na página de agendamento dos seus clientes.
+          ao vivo no painel e na página de agendamento dos clientes.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-5">
         {/* Form */}
-        <div className="bg-white rounded-xl border p-6 space-y-5">
-          <div className="flex items-center gap-2 text-gray-900 font-semibold">
-            <Palette className="w-4 h-4" />
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
+          <div className="flex items-center gap-2 text-gray-800 font-semibold text-sm">
+            <Palette className="w-4 h-4 text-tenant-secondary" />
             Configurações
           </div>
 
           <div className="space-y-1.5">
-            <Label>Nome da barbearia</Label>
+            <Label className="text-gray-700">Nome da barbearia</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nome da sua barbearia"
             />
             <p className="text-xs text-gray-400">
-              Nome exibido na barra lateral e no agendamento.
+              Exibido na barra lateral e na página de agendamento.
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Cor principal</Label>
+            <Label className="text-gray-700">Cor principal</Label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
                 value={effectivePrimary}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5 shrink-0"
               />
               <Input
                 value={effectivePrimary}
                 onChange={(e) => setPrimaryColor(e.target.value)}
                 placeholder="#1a1f2e"
-                className="font-mono"
+                className="font-mono text-sm"
               />
             </div>
-            <p className="text-xs text-gray-400">Sidebar e cabeçalhos</p>
+            <p className="text-xs text-gray-400">Sidebar, cabeçalhos e elementos estruturais</p>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Cor de destaque</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-gray-700">Cor de destaque</Label>
+              <button
+                type="button"
+                onClick={() => applyTenantTheme(effectivePrimary, effectiveSecondary)}
+                className="flex items-center gap-1 text-xs text-tenant-secondary hover:opacity-80 transition-opacity font-medium"
+              >
+                <Sparkles className="w-3 h-3" />
+                Derivar da primária
+              </button>
+            </div>
             <div className="flex items-center gap-3">
               <input
                 type="color"
                 value={effectiveSecondary}
                 onChange={(e) => setSecondaryColor(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5 shrink-0"
               />
               <Input
                 value={effectiveSecondary}
                 onChange={(e) => setSecondaryColor(e.target.value)}
                 placeholder="#b5882a"
-                className="font-mono"
+                className="font-mono text-sm"
               />
             </div>
             <p className="text-xs text-gray-400">
-              Botões, ícones e itens ativos
+              Botões, ícones ativos e elementos de destaque
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <Label>URL do logo</Label>
+            <Label className="text-gray-700">URL do logo</Label>
             <Input
               value={logoUrl}
               onChange={(e) => setLogoUrl(e.target.value)}
               placeholder="https://cdn.exemplo.com/logo.png"
             />
             <p className="text-xs text-gray-400">
-              Imagem quadrada (mín. 64×64px). Deixe vazio para usar o ícone
-              padrão.
+              Imagem quadrada (mín. 64×64px). Deixe vazio para usar o ícone padrão.
             </p>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Telefone de contato</Label>
-            <PhoneInput
-              value={contactPhone}
-              onChange={(e) => setContactPhone(e.target.value)}
-              placeholder="(11) 99999-9999"
-            />
-            <p className="text-xs text-gray-400">
-              Exibido na página de agendamento dos clientes.
-            </p>
-          </div>
+          <div className="pt-1 border-t border-gray-50">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Contato e localização</p>
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-gray-700">Telefone de contato</Label>
+                <PhoneInput
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <Label>Instagram</Label>
-            <Input
-              value={instagramUrl}
-              onChange={(e) => setInstagramUrl(e.target.value)}
-              placeholder="https://instagram.com/suabarbearia"
-            />
-            <p className="text-xs text-gray-400">
-              URL completa ou @handle da conta.
-            </p>
-          </div>
+              <div className="space-y-1.5">
+                <Label className="text-gray-700">Instagram</Label>
+                <Input
+                  value={instagramUrl}
+                  onChange={(e) => setInstagramUrl(e.target.value)}
+                  placeholder="https://instagram.com/suabarbearia"
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <Label>Link do Google Maps</Label>
-            <Input
-              value={mapsUrl}
-              onChange={(e) => setMapsUrl(e.target.value)}
-              placeholder="https://maps.google.com/..."
-            />
-            <p className="text-xs text-gray-400">
-              Link de localização exibido como "Ver no mapa".
-            </p>
-          </div>
+              <div className="space-y-1.5">
+                <Label className="text-gray-700">Link do Google Maps</Label>
+                <Input
+                  value={mapsUrl}
+                  onChange={(e) => setMapsUrl(e.target.value)}
+                  placeholder="https://maps.google.com/..."
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <Label>Horário de funcionamento</Label>
-            <TimeRangeInput
-              value={openingHours}
-              onChange={(v) => setOpeningHours(v)}
-            />
-          </div>
+              <div className="space-y-1.5">
+                <Label className="text-gray-700">Horário de funcionamento</Label>
+                <TimeRangeInput value={openingHours} onChange={(v) => setOpeningHours(v)} />
+              </div>
 
-          <div className="space-y-1.5">
-            <Label>Dias de funcionamento</Label>
-            <Input
-              value={operationDays}
-              onChange={(e) => setOperationDays(e.target.value)}
-              placeholder="Segunda a Sábado"
-            />
+              <div className="space-y-1.5">
+                <Label className="text-gray-700">Dias de funcionamento</Label>
+                <Input
+                  value={operationDays}
+                  onChange={(e) => setOperationDays(e.target.value)}
+                  placeholder="Segunda a Sábado"
+                />
+              </div>
+            </div>
           </div>
 
           <Button
             variant="gold"
-            className="w-full"
+            className="w-full font-semibold"
             loading={isPending}
             onClick={() => save()}
           >
@@ -262,14 +277,14 @@ export default function BrandingPage() {
           </Button>
         </div>
 
-        {/* Booking page preview */}
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-gray-900">
+        {/* Preview */}
+        <div className="space-y-4">
+          <p className="text-sm font-semibold text-gray-700">
             Preview — página do cliente
           </p>
 
           <div
-            className="rounded-xl overflow-hidden border shadow-sm"
+            className="rounded-xl overflow-hidden border border-gray-100 shadow-md"
             style={
               {
                 "--tenant-primary": effectivePrimary,
@@ -283,59 +298,46 @@ export default function BrandingPage() {
                 <img
                   src={logoUrl}
                   alt="Logo"
-                  className="w-9 h-9 rounded-lg object-cover shrink-0"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
+                  className="w-9 h-9 rounded-xl object-cover shrink-0 ring-2 ring-white/20"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
               ) : (
-                <div className="w-9 h-9 rounded-lg bg-tenant-secondary flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-tenant-secondary flex items-center justify-center shrink-0">
                   <Scissors className="w-4 h-4 text-white" />
                 </div>
               )}
               <div>
-                <p className="font-bold text-sm leading-tight">
-                  {name || "Navalha.io"}
-                </p>
-                <p className="text-xs opacity-60">Agendamento online</p>
+                <p className="font-bold text-sm leading-tight">{name || "Navalha.io"}</p>
+                <p className="text-xs text-white/50 mt-0.5">Agendamento online</p>
               </div>
             </div>
 
             {/* Steps */}
-            <div className="bg-white border-b px-4 py-3">
+            <div className="bg-white border-b border-gray-100 px-4 py-3">
               <div className="flex items-center gap-1">
-                {["Serviço", "Funcionario", "Data", "Confirmar"].map(
-                  (label, idx) => (
-                    <div key={label} className="flex items-center flex-1">
-                      <div className="flex items-center gap-1">
-                        <div
-                          className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                            idx === 0
-                              ? "bg-tenant-secondary text-white"
-                              : "bg-gray-200 text-gray-400"
-                          }`}
-                          style={
-                            idx === 0
-                              ? ({
-                                  "--tenant-secondary": effectiveSecondary,
-                                } as React.CSSProperties)
-                              : undefined
-                          }
-                        >
-                          {idx + 1}
-                        </div>
-                        <span
-                          className={`text-xs hidden sm:block font-medium ${idx === 0 ? "text-gray-900" : "text-gray-400"}`}
-                        >
-                          {label}
-                        </span>
+                {["Serviço", "Funcionario", "Data", "Confirmar"].map((label, idx) => (
+                  <div key={label} className="flex items-center flex-1">
+                    <div className="flex items-center gap-1">
+                      <div
+                        className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                          idx === 0
+                            ? "bg-tenant-secondary text-white"
+                            : "bg-gray-100 text-gray-400"
+                        }`}
+                      >
+                        {idx + 1}
                       </div>
-                      {idx < 3 && (
-                        <div className="flex-1 h-px mx-1 bg-gray-200" />
-                      )}
+                      <span
+                        className={`text-xs hidden sm:block font-medium ${
+                          idx === 0 ? "text-gray-900" : "text-gray-400"
+                        }`}
+                      >
+                        {label}
+                      </span>
                     </div>
-                  ),
-                )}
+                    {idx < 3 && <div className="flex-1 h-px mx-1 bg-gray-100" />}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -347,36 +349,26 @@ export default function BrandingPage() {
               ].map((s) => (
                 <div
                   key={s.name}
-                  className="bg-white border-2 border-transparent hover:border-tenant-secondary rounded-lg p-3 cursor-pointer transition-all"
+                  className="bg-white border-2 border-gray-100 hover:border-tenant-secondary rounded-xl p-3 cursor-pointer transition-all"
                 >
-                  <p className="font-semibold text-gray-900 text-sm">
-                    {s.name}
-                  </p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-xs text-gray-400">{s.time}</span>
-                    <span className="text-xs font-semibold text-tenant-secondary">
-                      {s.price}
-                    </span>
+                  <p className="font-semibold text-gray-900 text-sm">{s.name}</p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md font-medium">{s.time}</span>
+                    <span className="text-xs font-bold text-tenant-secondary">{s.price}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            <div className="flex items-center gap-1.5">
-              <div
-                className="w-4 h-4 rounded border"
-                style={{ backgroundColor: effectivePrimary }}
-              />
-              Principal
+          <div className="flex items-center gap-4 text-xs text-gray-400">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-md border border-gray-200" style={{ backgroundColor: effectivePrimary }} />
+              <span>Principal</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div
-                className="w-4 h-4 rounded border"
-                style={{ backgroundColor: effectiveSecondary }}
-              />
-              Destaque
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-md border border-gray-200" style={{ backgroundColor: effectiveSecondary }} />
+              <span>Destaque</span>
             </div>
           </div>
         </div>

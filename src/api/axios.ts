@@ -26,6 +26,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // Silently drop aborted requests — they happen on page navigation
+    // and should never trigger token refresh or any error side-effects.
+    if (axios.isCancel(error) || error.name === 'AbortError' || error.name === 'CanceledError') {
+      return Promise.reject(error)
+    }
+
     const originalRequest = error.config
 
     if (error.response?.status === 402) {

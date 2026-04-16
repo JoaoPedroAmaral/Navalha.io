@@ -28,13 +28,7 @@ export type BookingState = {
   appointment: Appointment | null;
 };
 
-const STEPS = [
-  "Serviço",
-  "Funcionario",
-  "Data & Hora",
-  "Confirmação",
-  "Sucesso",
-];
+const STEPS = ["Serviço", "Funcionario", "Data & Hora", "Confirmação", "Sucesso"];
 
 export default function BookingPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -51,20 +45,16 @@ export default function BookingPage() {
 
   const { data: shop, isLoading: shopLoading } = useQuery({
     queryKey: ["public-shop", slug],
-    queryFn: () => getPublicBarbershop(slug!),
+    queryFn: ({ signal }) => getPublicBarbershop(slug!, signal),
     enabled: !!slug,
   });
 
   const { data: products = [] } = useQuery({
     queryKey: ["public-products", slug],
-    queryFn: () => getPublicProducts(slug!),
+    queryFn: ({ signal }) => getPublicProducts(slug!, signal),
     enabled: !!slug,
   });
 
-  // useLayoutEffect fires synchronously after DOM mutations but before the
-  // browser paints, guaranteeing the CSS variables are set before any
-  // tenant-colored class is rendered on screen — even when the query
-  // resolves from cache on the very first render.
   useLayoutEffect(() => {
     if (!shopLoading) {
       if (shop) applyTenantTheme(shop.primaryColor, shop.secondaryColor);
@@ -86,64 +76,66 @@ export default function BookingPage() {
 
   if (shopLoading || !themeReady) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-14 h-14 rounded-xl bg-gray-800 flex items-center justify-center mx-auto">
-            <Scissors className="w-7 h-7 text-gray-400 animate-pulse" />
+          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto">
+            <Scissors className="w-7 h-7 text-white/30 animate-pulse" />
           </div>
-          <p className="text-sm text-gray-500 tracking-wide">Carregando...</p>
+          <p className="text-sm text-white/30 tracking-widest uppercase">Carregando</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-tenant-surface">
       {/* Header */}
-      <div className="bg-tenant-primary text-white">
-        <div className="max-w-2xl mx-auto px-4 py-5 flex items-center gap-3">
+      <div className="bg-tenant-primary text-white shadow-tenant-sm">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3.5">
           {shop?.logoUrl ? (
             <img
               src={shop.logoUrl}
               alt={shop.name}
-              className="w-9 h-9 rounded-lg object-cover shrink-0"
+              className="w-10 h-10 rounded-xl object-cover shrink-0 ring-2 ring-white/20"
             />
           ) : (
-            <div className="w-9 h-9 rounded-lg bg-tenant-secondary flex items-center justify-center shrink-0">
-              <Scissors className="w-4 h-4 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-tenant-secondary flex items-center justify-center shrink-0 shadow-md shadow-tenant-glow">
+              <Scissors className="w-5 h-5 text-white" />
             </div>
           )}
           <div>
-            <h1 className="font-bold text-lg leading-tight">
+            <h1 className="font-bold text-base leading-tight tracking-tight">
               {shop?.name ?? "Barbearia"}
             </h1>
-            <p className="text-xs text-white/60">Agendamento online</p>
+            <p className="text-xs text-white/50 mt-0.5">Agendamento online</p>
           </div>
         </div>
       </div>
 
-      {/* Progress */}
+      {/* Progress stepper */}
       {step < 4 && (
-        <div className="bg-white border-b shadow-sm">
-          <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3">
+        <div className="bg-white border-b border-gray-100 shadow-sm">
+          <div className="max-w-2xl mx-auto px-4 py-3.5">
             <div className="flex items-center justify-center gap-0">
               {STEPS.slice(0, 4).map((label, idx) => (
                 <div key={label} className="flex items-center flex-1 min-w-0">
                   <div className="flex flex-col items-center gap-1 flex-shrink-0">
                     <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                        idx < step
-                          ? "bg-green-500 text-white"
+                      className={`
+                        w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200
+                        ${idx < step
+                          ? 'bg-emerald-500 text-white shadow-sm'
                           : idx === step
-                            ? "bg-tenant-secondary text-white"
-                            : "bg-gray-200 text-gray-400"
-                      }`}
+                            ? 'progress-step-active text-white'
+                            : 'bg-gray-100 text-gray-400'
+                        }
+                      `}
                     >
                       {idx < step ? "✓" : idx + 1}
                     </div>
                     <span
-                      className={`text-xs font-medium leading-tight text-center max-w-[56px] truncate ${
-                        idx === step ? "text-gray-900" : "text-gray-400"
+                      className={`text-xs font-medium leading-tight text-center max-w-[60px] truncate ${
+                        idx === step ? "text-gray-800 font-semibold" : "text-gray-400"
                       }`}
                     >
                       {label}
@@ -151,7 +143,9 @@ export default function BookingPage() {
                   </div>
                   {idx < 3 && (
                     <div
-                      className={`flex-1 h-px mx-1 sm:mx-2 mt-[-14px] ${idx < step ? "bg-green-400" : "bg-gray-200"}`}
+                      className={`flex-1 h-0.5 mx-1 sm:mx-2 mt-[-14px] rounded-full transition-colors duration-300 ${
+                        idx < step ? "bg-emerald-400" : "bg-gray-150"
+                      }`}
                     />
                   )}
                 </div>
@@ -163,51 +157,48 @@ export default function BookingPage() {
 
       {/* Barbershop info bar */}
       {shop &&
-        (shop.mapsUrl ||
-          shop.contactPhone ||
-          shop.instagramUrl ||
-          shop.openingHours ||
-          shop.operationDays) && (
-          <div className="bg-white border-b overflow-x-auto">
-            <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-x-4 gap-y-1 flex-wrap min-w-0">
+        (shop.mapsUrl || shop.contactPhone || shop.instagramUrl || shop.openingHours || shop.operationDays) && (
+          <div className="bg-white border-b border-gray-100 overflow-x-auto">
+            <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-x-5 gap-y-1 flex-wrap min-w-0">
               {shop.mapsUrl && (
                 <a
                   href={shop.mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors whitespace-nowrap"
+                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-tenant-secondary transition-colors whitespace-nowrap font-medium"
                 >
                   <MapPin className="w-3 h-3 shrink-0" />
                   Ver no mapa
                 </a>
               )}
               {shop.contactPhone && (
-                <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                <a
+                  href={`tel:${shop.contactPhone}`}
+                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-tenant-secondary transition-colors whitespace-nowrap font-medium"
+                >
                   <Phone className="w-3 h-3 shrink-0" />
                   {formatPhoneDisplay(shop.contactPhone)}
-                </span>
+                </a>
               )}
               {shop.instagramUrl && (
                 <a
                   href={shop.instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors whitespace-nowrap"
+                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-tenant-secondary transition-colors whitespace-nowrap font-medium"
                 >
                   <ExternalLink className="w-3 h-3 shrink-0" />@
-                  {shop.instagramUrl
-                    .replace(/.*instagram\.com\//, "")
-                    .replace(/\/$/, "")}
+                  {shop.instagramUrl.replace(/.*instagram\.com\//, "").replace(/\/$/, "")}
                 </a>
               )}
               {shop.openingHours && (
-                <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                <span className="flex items-center gap-1.5 text-xs text-gray-400 whitespace-nowrap font-medium">
                   <Clock className="w-3 h-3 shrink-0" />
                   {shop.openingHours}
                 </span>
               )}
               {shop.operationDays && (
-                <span className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                <span className="flex items-center gap-1.5 text-xs text-gray-400 whitespace-nowrap font-medium">
                   <CalendarDays className="w-3 h-3 shrink-0" />
                   {shop.operationDays}
                 </span>
@@ -220,17 +211,17 @@ export default function BookingPage() {
       {products.length > 0 && (
         <div className="max-w-2xl mx-auto px-4 pt-6">
           <div className="flex items-center gap-2 mb-3">
-            <Package className="w-4 h-4 text-gray-400" />
-            <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Produtos</h2>
+            <Package className="w-4 h-4 text-tenant-secondary" />
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Produtos</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-xl border p-3 shadow-sm">
+              <div key={product.id} className="bg-white rounded-xl border border-gray-100 p-3.5 shadow-sm hover:shadow-md transition-shadow">
                 <p className="font-semibold text-gray-900 text-sm leading-snug">{product.name}</p>
                 {product.description && (
-                  <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{product.description}</p>
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{product.description}</p>
                 )}
-                <p className="mt-2 text-sm font-bold text-tenant-secondary">{formatCurrency(product.price)}</p>
+                <p className="mt-2.5 text-sm font-bold text-tenant-secondary">{formatCurrency(product.price)}</p>
               </div>
             ))}
           </div>
@@ -243,12 +234,7 @@ export default function BookingPage() {
           <StepSelectService
             slug={slug}
             onSelect={(service) => {
-              setBooking((prev) => ({
-                ...prev,
-                service,
-                barber: null,
-                scheduledAt: null,
-              }));
+              setBooking((prev) => ({ ...prev, service, barber: null, scheduledAt: null }));
               setStep(1);
             }}
           />
@@ -276,48 +262,36 @@ export default function BookingPage() {
             onBack={() => setStep(1)}
           />
         )}
-        {step === 3 &&
-          booking.service &&
-          booking.barber &&
-          booking.scheduledAt && (
-            <StepClientInfo
-              slug={slug}
-              booking={{
-                service: booking.service,
-                barber: booking.barber,
-                scheduledAt: booking.scheduledAt,
-                appointment: booking.appointment,
-              }}
-              onSuccess={(appointment) => {
-                setBooking((prev) => ({ ...prev, appointment }));
-                setStep(4);
-              }}
-              onBack={() => setStep(2)}
-            />
-          )}
-        {step === 4 &&
-          booking.appointment &&
-          booking.service &&
-          booking.barber &&
-          booking.scheduledAt && (
-            <StepSuccess
-              appointment={booking.appointment}
-              service={booking.service}
-              barber={booking.barber}
-              scheduledAt={booking.scheduledAt}
-              shopName={shop?.name ?? "Barbearia"}
-              onNewBooking={() => {
-                queryClient.invalidateQueries({ queryKey: ['public-slots'] });
-                setStep(0);
-                setBooking({
-                  service: null,
-                  barber: null,
-                  scheduledAt: null,
-                  appointment: null,
-                });
-              }}
-            />
-          )}
+        {step === 3 && booking.service && booking.barber && booking.scheduledAt && (
+          <StepClientInfo
+            slug={slug}
+            booking={{
+              service: booking.service,
+              barber: booking.barber,
+              scheduledAt: booking.scheduledAt,
+              appointment: booking.appointment,
+            }}
+            onSuccess={(appointment) => {
+              setBooking((prev) => ({ ...prev, appointment }));
+              setStep(4);
+            }}
+            onBack={() => setStep(2)}
+          />
+        )}
+        {step === 4 && booking.appointment && booking.service && booking.barber && booking.scheduledAt && (
+          <StepSuccess
+            appointment={booking.appointment}
+            service={booking.service}
+            barber={booking.barber}
+            scheduledAt={booking.scheduledAt}
+            shopName={shop?.name ?? "Barbearia"}
+            onNewBooking={() => {
+              queryClient.invalidateQueries({ queryKey: ['public-slots'] });
+              setStep(0);
+              setBooking({ service: null, barber: null, scheduledAt: null, appointment: null });
+            }}
+          />
+        )}
       </div>
     </div>
   );

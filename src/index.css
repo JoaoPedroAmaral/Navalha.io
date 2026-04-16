@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap');
+@import url('https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css');
 
 @tailwind base;
 @tailwind components;
@@ -8,6 +9,16 @@
   :root {
     --tenant-primary: #1a1f2e;
     --tenant-secondary: #b5882a;
+    --tenant-surface: #f4f2ee;
+    --tenant-content-bg: #efede8;
+    --tenant-primary-hover: #242a3d;
+    --tenant-primary-deep: #12161f;
+    --tenant-glow: hsl(32 80% 44% / 0.18);
+    --tenant-shadow: hsl(220 30% 10% / 0.25);
+    --tenant-text-on-primary: #ffffff;
+    --tenant-text-on-primary-rgb: 255 255 255;
+    --tenant-secondary-light: #f0e4c4;
+
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -44,10 +55,70 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: 'opsz' 24;
   }
 
   #root {
     min-height: 100vh;
+  }
+}
+
+@layer components {
+  .sidebar-gradient {
+    background: linear-gradient(
+      160deg,
+      var(--tenant-primary) 0%,
+      var(--tenant-primary-deep) 100%
+    );
+  }
+
+  .tenant-card {
+    background: #ffffff;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.06),
+      0 1px 2px -1px rgb(0 0 0 / 0.04);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .tenant-card:hover {
+    box-shadow:
+      0 4px 12px 0 rgb(0 0 0 / 0.08),
+      0 2px 4px -1px rgb(0 0 0 / 0.05);
+  }
+
+  .metric-card-glow {
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.07),
+      0 0 0 1px hsl(var(--border)),
+      inset 0 1px 0 0 rgb(255 255 255 / 0.8);
+  }
+
+  .nav-item-active {
+    background: var(--tenant-secondary);
+    color: var(--tenant-text-on-primary);
+    box-shadow: 0 2px 8px var(--tenant-glow);
+  }
+
+  .nav-item-hover {
+    background: rgb(var(--tenant-text-on-primary-rgb) / 0.08);
+    color: var(--tenant-text-on-primary);
+  }
+
+  .booking-card-hover:hover {
+    border-color: var(--tenant-secondary);
+    box-shadow: 0 4px 16px var(--tenant-glow);
+  }
+
+  .tenant-surface {
+    background: var(--tenant-surface);
+  }
+
+  .progress-step-active {
+    background: var(--tenant-secondary);
+    box-shadow: 0 0 0 3px var(--tenant-secondary-light);
   }
 }
 
@@ -111,5 +182,15 @@
 @media (min-width: 1024px) {
   .table-scroll-mobile {
     max-height: calc(100vh - 200px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -10,11 +10,11 @@ import type {
 } from '@/types'
 
 // Appointments
-export async function getAppointments(params?: {
-  date?: string
-  status?: AppointmentStatus
-}): Promise<Appointment[]> {
-  const { data } = await api.get('/api/admin/appointments', { params })
+export async function getAppointments(
+  params?: { date?: string; status?: AppointmentStatus },
+  signal?: AbortSignal,
+): Promise<Appointment[]> {
+  const { data } = await api.get('/api/admin/appointments', { params, signal })
   return data
 }
 
@@ -38,8 +38,8 @@ export async function createAppointment(payload: {
 }
 
 // Barbers
-export async function getBarbers(): Promise<Barber[]> {
-  const { data } = await api.get('/api/admin/barbers')
+export async function getBarbers(signal?: AbortSignal): Promise<Barber[]> {
+  const { data } = await api.get('/api/admin/barbers', { signal })
   return data
 }
 
@@ -61,8 +61,8 @@ export async function deleteBarber(id: string): Promise<void> {
 }
 
 // Services
-export async function getServices(): Promise<Service[]> {
-  const { data } = await api.get('/api/admin/services')
+export async function getServices(signal?: AbortSignal): Promise<Service[]> {
+  const { data } = await api.get('/api/admin/services', { signal })
   return data
 }
 
@@ -88,8 +88,8 @@ export async function deleteService(id: string): Promise<void> {
 }
 
 // Products
-export async function getProducts(): Promise<Product[]> {
-  const { data } = await api.get('/api/admin/products')
+export async function getProducts(signal?: AbortSignal): Promise<Product[]> {
+  const { data } = await api.get('/api/admin/products', { signal })
   return data
 }
 
@@ -115,8 +115,8 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 // Schedule
-export async function getSchedule(barberId: string): Promise<WorkSchedule[]> {
-  const { data } = await api.get(`/api/admin/schedule/${barberId}`)
+export async function getSchedule(barberId: string, signal?: AbortSignal): Promise<WorkSchedule[]> {
+  const { data } = await api.get(`/api/admin/schedule/${barberId}`, { signal })
   return data
 }
 
@@ -141,8 +141,8 @@ export interface BrandingData {
   mapsUrl?: string | null
 }
 
-export async function getAdminBranding(): Promise<BrandingData> {
-  const { data } = await api.get('/api/admin/branding')
+export async function getAdminBranding(signal?: AbortSignal): Promise<BrandingData> {
+  const { data } = await api.get('/api/admin/branding', { signal })
   return data
 }
 
@@ -161,8 +161,8 @@ export async function updateBranding(payload: {
 }
 
 // Billing
-export async function getBilling(): Promise<BillingStatus> {
-  const { data } = await api.get('/api/admin/billing')
+export async function getBilling(signal?: AbortSignal): Promise<BillingStatus> {
+  const { data } = await api.get('/api/admin/billing', { signal })
   return data
 }
 

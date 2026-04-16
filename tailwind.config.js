@@ -45,7 +45,15 @@ export default {
         'sidebar-hover': '#151a26',
         gold: '#b5882a',
         'tenant-primary': 'var(--tenant-primary)',
+        'tenant-primary-deep': 'var(--tenant-primary-deep)',
+        'tenant-primary-hover': 'var(--tenant-primary-hover)',
         'tenant-secondary': 'var(--tenant-secondary)',
+        'tenant-secondary-light': 'var(--tenant-secondary-light)',
+        'tenant-surface': 'var(--tenant-surface)',
+      },
+      boxShadow: {
+        'tenant-glow': '0 4px 20px var(--tenant-glow)',
+        'tenant-sm': '0 2px 8px var(--tenant-shadow)',
       },
       borderRadius: {
         lg: 'var(--radius)',

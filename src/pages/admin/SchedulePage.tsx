@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Settings } from "lucide-react";
 import { getBarbers, getSchedule, saveSchedule } from "@/api/admin";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -14,6 +13,72 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/useToast";
 import type { DayOfWeek, WorkSchedule } from "@/types";
+
+const HOURS = Array.from({ length: 24 }, (_, i) =>
+  String(i).padStart(2, "0"),
+);
+const MINUTES = ["00", "15", "30", "45"];
+
+function parseHour(time: string) {
+  return time.split(":")[0] ?? "09";
+}
+
+function parseMinute(time: string) {
+  return time.split(":")[1] ?? "00";
+}
+
+function buildTime(hour: string, minute: string) {
+  return `${hour}:${minute}`;
+}
+
+interface TimeSelectProps {
+  value: string;
+  disabled?: boolean;
+  onChange: (time: string) => void;
+}
+
+function TimeSelect({ value, disabled, onChange }: TimeSelectProps) {
+  const hour = parseHour(value);
+  const minute = parseMinute(value);
+
+  return (
+    <div className="flex items-center gap-1">
+      <Select
+        value={hour}
+        onValueChange={(h) => onChange(buildTime(h, minute))}
+        disabled={disabled}
+      >
+        <SelectTrigger className="w-[72px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {HOURS.map((h) => (
+            <SelectItem key={h} value={h}>
+              {h}h
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <span className="text-gray-400 text-xs font-semibold">:</span>
+      <Select
+        value={minute}
+        onValueChange={(m) => onChange(buildTime(hour, m))}
+        disabled={disabled}
+      >
+        <SelectTrigger className="w-[68px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {MINUTES.map((m) => (
+            <SelectItem key={m} value={m}>
+              {m}min
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
 
 const DAYS: Array<{ key: DayOfWeek; label: string }> = [
   { key: "MONDAY", label: "Segunda-feira" },
@@ -45,7 +110,8 @@ export default function SchedulePage() {
 
   const { data: barbers = [] } = useQuery({
     queryKey: ["barbers"],
-    queryFn: getBarbers,
+    queryFn: ({ signal }) => getBarbers(signal),
+    staleTime: 1000 * 60 * 5,
   });
 
   // Derive effective barber ID: use selected or fall back to first barber
@@ -162,24 +228,16 @@ export default function SchedulePage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2 pl-6 sm:pl-0">
-                    <Input
-                      type="time"
+                    <TimeSelect
                       value={row.startTime}
                       disabled={!row.active}
-                      onChange={(e) =>
-                        updateDay(day.key, "startTime", e.target.value)
-                      }
-                      className="w-28 sm:w-32"
+                      onChange={(t) => updateDay(day.key, "startTime", t)}
                     />
                     <span className="text-gray-400 text-sm">até</span>
-                    <Input
-                      type="time"
+                    <TimeSelect
                       value={row.endTime}
                       disabled={!row.active}
-                      onChange={(e) =>
-                        updateDay(day.key, "endTime", e.target.value)
-                      }
-                      className="w-28 sm:w-32"
+                      onChange={(t) => updateDay(day.key, "endTime", t)}
                     />
                   </div>
                 </div>

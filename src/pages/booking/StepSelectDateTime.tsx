@@ -35,7 +35,9 @@ export default function StepSelectDateTime({ slug, service, barber, onSelect, on
 
   const { data: slots = [], isLoading } = useQuery({
     queryKey: ['public-slots', slug, barber.id, service.id, dateStr],
-    queryFn: () => getPublicSlots(slug, barber.id, service.id, dateStr),
+    queryFn: ({ signal }) => getPublicSlots(slug, barber.id, service.id, dateStr, signal),
+    staleTime: 0,
+    placeholderData: (prev) => prev,
   })
 
   function formatTime(time: string): string {
